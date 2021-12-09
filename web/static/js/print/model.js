@@ -22,6 +22,7 @@ app.model = function() {
 		let that = {};
 		const selected = [];
 		const data = {};
+		const labware = {};
 
 		that.load = function(job_data){
 			for (var i = 0; i < job_data.length; i++){
@@ -53,9 +54,15 @@ app.model = function() {
 			}
 		}
 
+		that.setLabware = function(selected_labware) {
+			labware["canvas"] = selected_labware;
+		}
+
 		that.selected = selected;
 
 		that.data = data;
+
+		that.labware = labware;
 
 		return that;
 	}
@@ -158,12 +165,16 @@ app.model = function() {
 		, get_img_url: function(id) {
 			return jobs.data[id].img_uri;
 		}
+		, setLabware: function(labware) {
+			jobs.setLabware(labware);
+		}
 		, submit: function() {
 			$.ajax({
 				url: 'procedure_request'
 				, type: 'POST'
 				, data: JSON.stringify({
-					'ids': jobs.selected
+					'ids': jobs.selected,
+					'labware': jobs.labware
 				})
 				, contentType: 'application/json'
 				, dataType: 'json'

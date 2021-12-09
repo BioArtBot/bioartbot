@@ -78,6 +78,11 @@ app.presentation = function(view, model) {
 		view.login.reset();
 	});
 	
+	view.labwareSelector.register.onChange(function() {
+		let labware = view.labwareSelector.getValue();
+		model.jobs.setLabware(labware);
+	});
+
 	view.submit.register.onClick(function() {
 		if (!isSubmitDisabled) {
 			isSubmitDisabled = true;

@@ -84,8 +84,15 @@ def get_procedure_file(id):
 def receive_print_request():
 
     artpiece_ids = request.get_json()['ids']
+    labware = request.get_json()['labware']
 
-    msg, procedure_loc = make_procedure(artpiece_ids)
+    option_args = {'notebook':False
+                    ,'palette': 'corning_96_wellplate_360ul_flat'
+                    ,'pipette': 'p300_single'
+                    ,'canvas': labware['canvas']
+                    }
+
+    msg, procedure_loc = make_procedure(artpiece_ids, option_args=option_args)
 
     if procedure_loc:
         unique_id = procedure_loc[1].split('_')[-1]

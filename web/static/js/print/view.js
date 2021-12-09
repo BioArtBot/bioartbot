@@ -8,6 +8,7 @@ app.view = function($, model) {
 		, submissionModal: $('#submission-modal')
 		, submissionBox: $('#submission-block')
 		, submissionModalBtn: $('#submit-show')
+		, labwareSelector: $('.print-submit>#select-labware')
 		, printSubmit: $('.print-submit>.submit-button')
 		, jobBoard: $('.job-board')
 		, jobHeader: $('.job-header')
@@ -132,6 +133,32 @@ app.view = function($, model) {
 
 		return that;
 	}(DOM.jobBoard);
+
+	that.labwareSelector = function(labwareSelector) {
+		let that = {};
+
+		that.addOption = function(option) {
+			labwareSelector.append(
+				`<option id=ID${option}>
+					option
+				</option>`
+			)
+		}
+
+		that.getValue = function() {
+			return labwareSelector[0].value;
+		}
+
+		that.register = {
+			onChange: function(handler) {
+				labwareSelector.on('change', function(event) {
+					handler();
+				});
+			}
+		}
+		
+		return that;
+	}(DOM.labwareSelector)
 
 	that.selectedJobList = function(selectedJobList, selectedJobsPlaceholder) {
 		let that = {};
