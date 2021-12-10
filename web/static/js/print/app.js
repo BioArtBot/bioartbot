@@ -9,6 +9,7 @@ app.init = function() {
 
 	model.register(presentation);
 	model.jobs.get();
+	model.labware.get_available();
 	model.user.load_name();
 };
 

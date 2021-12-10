@@ -18,7 +18,7 @@ def validate_properties(properties_as_dict, obj):
         if prop.get('units'):
             assert obj.properties[name_in_obj].units == prop['units']
         assert obj.properties[name_in_obj]._db_name == prop['name']
-        assert obj.properties[name_in_obj]._name == name_in_obj
+        assert obj.properties[name_in_obj].name == name_in_obj
     return True
 
 

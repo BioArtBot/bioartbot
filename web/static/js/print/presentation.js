@@ -80,7 +80,7 @@ app.presentation = function(view, model) {
 	
 	view.labwareSelector.register.onChange(function() {
 		let labware = view.labwareSelector.getValue();
-		model.jobs.setLabware(labware);
+		model.labware.select(labware);
 	});
 
 	view.submit.register.onClick(function() {
@@ -112,6 +112,12 @@ app.presentation = function(view, model) {
 		for (var id_key in printables) {
 			job = printables[id_key];
 			view.board.add(job);
+		}
+	}
+
+	function populateLabOptions(labware) {
+		for (let i=0; i!=labware.length; ++i) {
+			view.labwareSelector.addOption(labware[i]);
 		}
 	}
 
@@ -152,6 +158,9 @@ app.presentation = function(view, model) {
 		}
 		, 'JOB_DATA': function(action) {
 			createJobBoard(action.payload.job_data);
+		}
+		, 'LABWARE_DATA': function(action) {
+			populateLabOptions(action.payload.labware_data)
 		}
 		, 'PRINT_REQ_SUBMIT': function(action) {
 			if (action.error) {

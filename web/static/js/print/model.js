@@ -22,7 +22,6 @@ app.model = function() {
 		let that = {};
 		const selected = [];
 		const data = {};
-		const labware = {};
 
 		that.load = function(job_data){
 			for (var i = 0; i < job_data.length; i++){
@@ -54,15 +53,9 @@ app.model = function() {
 			}
 		}
 
-		that.setLabware = function(selected_labware) {
-			labware["canvas"] = selected_labware;
-		}
-
 		that.selected = selected;
 
 		that.data = data;
-
-		that.labware = labware;
 
 		return that;
 	}
@@ -109,8 +102,70 @@ app.model = function() {
 		return that;
 	} 
 
+	function Labware(){
+		let that = {};
+		const available = [];
+		const selected = {};
+
+		that.select = function(selected_labware) {
+			selected["canvas"] = selected_labware;
+		}
+
+		that.load = function(labware_data) {
+			for (var i = 0; i < labware_data.length; i++){
+				item = labware_data[i];
+				available.push(item.name)
+			}
+			that.select(labware_data[0].name)
+		}
+
+		that.available = available;
+
+		that.selected = selected;
+
+		return that;
+	}
+
 	let jobs = Jobs();
 	let user = User();
+	let labware = Labware();
+
+	that.labware = {
+		get_available: function() {
+			$.ajax({
+				url: 'available_labware'
+				, type: 'GET'
+				, dataType: 'json'
+				, cache: 'false'
+			})
+			.done(function(data, textStatus, jqXHR) {
+				labware.load(JSON.parse(data.data));
+				let labware_data = labware.available
+				subject.notifyObservers({
+					type: 'LABWARE_DATA'
+					, error: false
+					, payload: {
+						labware_data
+					}
+				});
+			})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				if(jqXHR.status==401){
+					subject.notifyObservers({
+						type: 'LOGIN_REQUIRED'
+					})
+				};
+				if(jqXHR.status==403){
+					subject.notifyObservers({
+						type: 'NOT_AUTHORIZED'
+					})
+				};
+			});
+		},
+		select: function(selected) {
+			labware.select(selected);
+		}
+	}
 
 	that.jobs = {
 		get: function() {
@@ -165,16 +220,13 @@ app.model = function() {
 		, get_img_url: function(id) {
 			return jobs.data[id].img_uri;
 		}
-		, setLabware: function(labware) {
-			jobs.setLabware(labware);
-		}
 		, submit: function() {
 			$.ajax({
 				url: 'procedure_request'
 				, type: 'POST'
 				, data: JSON.stringify({
 					'ids': jobs.selected,
-					'labware': jobs.labware
+					'labware': labware.selected
 				})
 				, contentType: 'application/json'
 				, dataType: 'json'

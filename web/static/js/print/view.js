@@ -138,11 +138,7 @@ app.view = function($, model) {
 		let that = {};
 
 		that.addOption = function(option) {
-			labwareSelector.append(
-				`<option id=ID${option}>
-					option
-				</option>`
-			)
+			labwareSelector.append(`<option id=ID${option}>${option}</option>`)
 		}
 
 		that.getValue = function() {

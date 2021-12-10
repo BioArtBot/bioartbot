@@ -12,7 +12,7 @@ class LabObjectProperty():
     def __init__(self, name, value, units=None):
         self.value = value
         if units: self.units = units
-        self._name = "_".join([name,units]) if units else name
+        self.name = "_".join([name,units]) if units else name
         self._db_name = name
 
     @classmethod
@@ -42,7 +42,7 @@ class LabObjectProperty():
         return schema.dump(self)
 
     def __repr__(self):
-        return f'<LabObjectProperty: {self._name} = {self.value}>'
+        return f'<LabObjectProperty: {self.name} = {self.value}>'
 
 
 
@@ -51,13 +51,13 @@ class LabObjectPropertyCollection(dict):
     @classmethod
     def _from_model(cls, props_as_model):
         props_as_props = [LabObjectProperty._from_model(prop) for prop in props_as_model]
-        collection = {prop._name:prop for prop in props_as_props}
+        collection = {prop.name:prop for prop in props_as_props}
         return cls(collection)
 
     @classmethod
     def from_dicts(cls, prop_list):
         props_as_props = [LabObjectProperty.from_dict(prop) for prop in prop_list]
-        collection = {prop._name:prop for prop in props_as_props}
+        collection = {prop.name:prop for prop in props_as_props}
         return cls(collection)
 
     def as_model(self):
@@ -119,15 +119,27 @@ class LabObject():
         return cls(name, object_class, properties, _model)
     
     @classmethod
-    def stored_object_types(obj_class: str=None):
+    def stored_object_types(cls, obj_class: str=None):
         """List all object types currently available
            obj_class is an optional filter to only show types
            of a certain class, e.g. "wellplates"
         """
-        pass #TODO
+        try:
+            if obj_class:
+                obj_types = _Model.query.filter(_Model.obj_class == obj_class).all()
+            else:
+                obj_types = _Model.query.all()
+        except AttributeError:
+            return None
+
+        for type in obj_types:
+            type.serial_props = LabObjectPropertyCollection._from_model(type.properties).values()
+
+        return obj_types
+        
 
     @classmethod
-    def stored_properties(object_type: str=None, filter: str=None):
+    def stored_properties(cls, object_type: str=None, filter: str=None):
         """List all properties stored in the database
            object_type shows only properties for an object type
            filter uses regexp to show properties that look like the string
