@@ -77,7 +77,7 @@ def clear_database():
     db.session.rollback()
     meta = db.metadata
     for table in reversed(meta.sorted_tables): #More idiomatic way to keep default data in DB is preferable
-        if table.name != 'bacterial_colors': db.session.execute(table.delete())
+        if table.name not in ['bacterial_colors','strains','plasmids', 'applications']: db.session.execute(table.delete())
     db.session.commit()
 
 @pytest.fixture(scope='session')
