@@ -36,7 +36,9 @@ class BacterialColorModel(Base):
     biobrick_id = sa.Column(sa.String(30), nullable=False)
     strain_id = sa.Column(sa.Integer, sa.ForeignKey('strains.id'), nullable=False)
     strain = sa.orm.relationship("StrainModel",
-                    primaryjoin="(BacterialColorModel.strain_id==StrainModel.id)")
+                    primaryjoin="and_(BacterialColorModel.strain_id==StrainModel.id, "
+                        "StrainModel.application_id==1)", #assume 1 == 'bioart'
+                    cascade="all, delete")
 
 strain_plasmid_association = sa.Table('strain_plasmid_association', Base.metadata,
     sa.Column('strain_id', sa.ForeignKey('strains.id'), primary_key=True),
@@ -149,7 +151,8 @@ def upgrade():
                           'bacterial_colors',
                           'strains',
                           ['strain_id'],
-                          ['id']
+                          ['id'],
+                          ondelete='CASCADE'
                          )
 
     with session_scope() as session:

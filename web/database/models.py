@@ -66,7 +66,7 @@ class SuperUserModel(SurrogatePK, Model):
     def __repr__(self):
         return '<%r: %r>' % (self.id, self.email)
 
-#TODO Migrate DB and fix migrate scripts to include data migration of bacterial_colors to ref StrainModel
+#TODO Fix Test errors
 #TODO Make endpoints for sending parts information and receiving gg_assembly information
 
 class ApplicationModel(SurrogatePK, Model):
@@ -85,10 +85,11 @@ class BacterialColorModel(SurrogatePK, Model):
     green = Column(db.SmallInteger(), nullable=False)
     blue = Column(db.SmallInteger(), nullable=False)
     opacity = Column(db.SmallInteger(), nullable=False)
-    strain_id = Column(db.Integer, db.ForeignKey('strains.id'), nullable=False)
+    strain_id = Column(db.Integer, db.ForeignKey('strains.id', ondelete="CASCADE"), nullable=False)
     strain = relationship("StrainModel",
                     primaryjoin="and_(BacterialColorModel.strain_id==StrainModel.id, "
-                        "StrainModel.application_id==1)") #assume 1 == 'bioart'
+                        "StrainModel.application_id==1)", #assume 1 == 'bioart'
+                    cascade="all, delete")
     in_use = Column(db.Boolean(), nullable=False)
 
     rgba = composite(RGBA, red, green, blue, opacity)
