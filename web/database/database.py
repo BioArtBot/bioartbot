@@ -1,5 +1,6 @@
 """Database module, including the SQLAlchemy database object and DB-related utilities."""
 from sqlalchemy.orm import relationship, deferred, composite
+from sqlalchemy.ext.declarative import declarative_base
 from enum import Enum
 
 from web.extensions import db
@@ -10,6 +11,8 @@ relationship = relationship
 deferred = deferred
 composite = composite
 Model = db.Model
+Table = db.Table
+Base = declarative_base()
 
 # From Mike Bayer's "Building the app" talk
 # https://speakerdeck.com/zzzeek/building-the-app
