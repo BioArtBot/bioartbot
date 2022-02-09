@@ -144,6 +144,7 @@ app.presentation = function(view, model) {
 			view.login.hide();
 			model.user.set_name(action.payload.user);
 			model.jobs.get();
+			model.labware.get_available();
 			view.submit.enable();
 		} 
 		, 'UPDATE_USER' : function(action) {
