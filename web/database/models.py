@@ -66,9 +66,6 @@ class SuperUserModel(SurrogatePK, Model):
     def __repr__(self):
         return '<%r: %r>' % (self.id, self.email)
 
-#TODO Fix Test errors
-#TODO Make endpoints for sending parts information and receiving gg_assembly information
-
 class ApplicationModel(SurrogatePK, Model):
     __tablename__ = 'applications'
 
@@ -138,7 +135,7 @@ class PlasmidModel(SurrogatePK, Model):
 
 class GeneticPartsModel(SurrogatePK, Model):
     """
-    A genetic part is a sequence of DNA with at least the following:
+    A genetic part is a sequence of DNA with at least the foll owing:
       - Sequences enabling it's assembly into a larger construct via
         one or more specific assembly methods
       - An intended use in a biomolecular context (e.g. "promoter")
