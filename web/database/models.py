@@ -135,7 +135,7 @@ class PlasmidModel(SurrogatePK, Model):
 
 class GeneticPartsModel(SurrogatePK, Model):
     """
-    A genetic part is a sequence of DNA with at least the foll owing:
+    A genetic part is a sequence of DNA with at least the following:
       - Sequences enabling it's assembly into a larger construct via
         one or more specific assembly methods
       - An intended use in a biomolecular context (e.g. "promoter")

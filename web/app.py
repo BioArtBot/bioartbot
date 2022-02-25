@@ -8,6 +8,7 @@ from web.views import main
 from web.api.user.artpiece.endpoints import artpiece_blueprint
 from web.api.user.endpoints import user_blueprint
 from web.api.lab_objects.endpoints import lab_object_blueprint
+from web.api.biofoundry.endpoints import biofoundry_blueprint
 from web.api.user.exceptions import InvalidUsage
 
 def create_app():
@@ -40,6 +41,7 @@ def register_blueprints(app):
     app.register_blueprint(artpiece_blueprint)
     app.register_blueprint(user_blueprint)
     app.register_blueprint(lab_object_blueprint)
+    app.register_blueprint(biofoundry_blueprint)
 
 def register_errorhandlers(app):
     @app.errorhandler(InvalidUsage)
