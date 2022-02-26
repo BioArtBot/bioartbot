@@ -4,7 +4,6 @@ from marshmallow import ValidationError
 from jwt import (ExpiredSignatureError, PyJWTError)
 from sqlalchemy.exc import IntegrityError
 from web.extensions import db
-from .serializers import (GeneticPartSchema, PlasmidSchema, StrainSchema)
 from .genetic_part import GeneticPart
 from .plasmid import Plasmid
 from .strain import Strain

@@ -121,6 +121,9 @@ class PlasmidModel(SurrogatePK, Model):
     sequence = Column(db.Text())
     sequence_of_interest = Column(db.Text())
     antibiotic_resistance = Column(db.String(25), nullable=False)
+    status = Column(
+            db.Enum(SubmissionStatus, values_callable=lambda x: [e.value for e in x])
+            , nullable=False, name='build_status')
     application_id = Column(db.Integer, db.ForeignKey('applications.id'))
     application = relationship('ApplicationModel')
     source = Column(db.String(50))
@@ -170,6 +173,9 @@ class StrainModel(SurrogatePK, Model):
     friendly_name = Column(db.String(20), nullable=False)
     description = Column(db.String(500), nullable=False)
     background_strain = Column(db.String(30), nullable=False)
+    status = Column(
+            db.Enum(SubmissionStatus, values_callable=lambda x: [e.value for e in x])
+            , nullable=False, name='build_status')
     application_id = Column(db.Integer, db.ForeignKey('applications.id'))
     application = relationship('ApplicationModel')
     plasmids = relationship('PlasmidModel', 
