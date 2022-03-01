@@ -64,3 +64,16 @@ class StrainSchema(Schema):
     @post_load
     def make_strain(self, data, **kwargs):
         return Strain.create(**data)
+
+class ConstructSubmissionSchema(Schema):
+    email = fields.Email(required=True, load_only=True)
+    name = fields.Str(required=True)
+    description = fields.Str(required=True)
+    inserts= fields.List(fields.Str(), required=True)
+
+    def __init__(self, many=False, **kwargs):
+        only = kwargs['only'] if 'only' in kwargs else None
+        Schema.__init__(self, many=many, only=only)
+
+    class meta:
+        strict=True

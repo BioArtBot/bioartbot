@@ -1,9 +1,11 @@
 from flask import (Blueprint, jsonify, request)
 from flask_jwt_extended import jwt_required
-from .core import validate_and_extract_objects, save_objects_in_db
+from .core import (validate_and_extract_objects, validate_and_extract_construct,
+                    save_objects_in_db, build_plasmid_from_submission)
 from .genetic_part import GeneticPart
 from .strain import Strain
-from .serializers import GeneticPartSchema, StrainSchema
+from .plasmid import Plasmid
+from .serializers import GeneticPartSchema, PlasmidSchema, StrainSchema, ConstructSubmissionSchema
 from ..user.utilities import access_level_required #TODO bad dependency
 from web.database.models import SuperUserRole
 
@@ -30,6 +32,16 @@ def get_available_strains():
 
     return jsonify({'data': serialized}), 200
 
+@biofoundry_blueprint.route('/available_plasmids', methods=('GET', ))
+@jwt_required()
+@access_level_required(SuperUserRole.printer)
+def get_available_plasmids():
+    available_plasmids = Plasmid.get_available()
+    schema = PlasmidSchema(many=True)
+    serialized = schema.dumps(available_plasmids)
+
+    return jsonify({'data': serialized}), 200
+
 @biofoundry_blueprint.route('/upload_part', methods=('POST', ))
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
@@ -39,8 +51,16 @@ def load_new_part():
 
     return jsonify({'data': None}), 201
 
+@biofoundry_blueprint.route('/submit_construct', methods=('POST', ))
+@jwt_required()
+@access_level_required(SuperUserRole.admin)
 def receive_construct():
-    pass
+    plasmid_data, email = validate_and_extract_construct(ConstructSubmissionSchema, request.get_json())
+    id, name = build_plasmid_from_submission(plasmid_data, email)
+
+    msg = f'Successfully created plasmid {id}, named {name}. Ready for build process'
+
+    return jsonify({'status':'success', 'msg': msg, 'data': {'plasmid_id':id,'name':name}}), 201
 
 def build_protocol():
     pass

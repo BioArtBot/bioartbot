@@ -24,3 +24,16 @@ def save_objects_in_db(objects: list):
 
     db.session.commit()
     return True
+
+def validate_and_extract_construct(schema, json_data):
+    try:
+        data = schema(many=False).load(json_data)
+        email = data.pop('email')
+        #need to validate construct for GG MoClo
+    except ValidationError as err:
+        raise InvalidUsage.from_validation_error(err)
+    return data, email
+
+def build_plasmid_from_submission(plasmid_data, email):
+    plasmid = Plasmid.create_from_parts(**plasmid_data, status='Submitted', submitter=email)
+    return plasmid.id, plasmid.name

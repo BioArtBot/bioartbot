@@ -9,6 +9,9 @@ class GeneticPart():
         self._model = model
         self._model_id = model.id
 
+        self.sequence = self._model.sequence
+        self.part_type = self._model.part_type
+
     @classmethod
     def get_available_parts(cls, method=None):
         if method:

@@ -183,7 +183,7 @@ class StrainModel(SurrogatePK, Model):
                             backref="in_strains")
 
     def __repr__(self):
-        return '<%r %r: %r>' % (self.part_type, self.global_id, self.friendly_name)
+        return '<%r: %r>' % (self.global_id, self.friendly_name)
 
 
 class EmailFailureState(Enum):
