@@ -1,5 +1,6 @@
 from flask import (Blueprint, jsonify, request)
 from flask_jwt_extended import jwt_required
+from flask_cors import cross_origin
 from .core import (validate_and_extract_objects, validate_and_extract_construct,
                     save_objects_in_db, build_plasmid_from_submission)
 from .genetic_part import GeneticPart
@@ -54,6 +55,7 @@ def load_new_part():
 @biofoundry_blueprint.route('/submit_construct', methods=('POST', ))
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
+@cross_origin()
 def receive_construct():
     plasmid_data, email = validate_and_extract_construct(ConstructSubmissionSchema, request.get_json())
     id, name = build_plasmid_from_submission(plasmid_data, email)

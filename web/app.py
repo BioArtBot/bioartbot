@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template
 from flask_migrate import upgrade
 from sqlalchemy.exc import DBAPIError
-from web.extensions import db, migrate, mail, cache, jwt, argon2
+from web.extensions import db, migrate, mail, cache, cors, jwt, argon2
 from web.views import main
 from web.api.user.artpiece.endpoints import artpiece_blueprint
 from web.api.user.endpoints import user_blueprint
@@ -32,6 +32,7 @@ def register_extensions(app):
     migrate.init_app(app, db)
     mail.init_app(app)
     cache.init_app(app)
+    cors.init_app(app)
     jwt.init_app(app)
     argon2.init_app(app)
 
