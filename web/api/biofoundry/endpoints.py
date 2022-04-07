@@ -19,9 +19,11 @@ biofoundry_blueprint = Blueprint('biofoundry', __name__, url_prefix='/biofoundry
 def get_available_parts():
     available_parts = GeneticPart.get_available_parts()
     schema = GeneticPartSchema(many=True)
-    serialized = schema.dumps(available_parts)
+    serialized = schema.dump(available_parts)
 
-    return jsonify({'data': serialized}), 200
+    insert_dict = {insert['id']: insert for insert in serialized}
+
+    return jsonify({'assembly_standard': 'golden_gate_moclo', 'inserts': insert_dict}), 200
 
 @biofoundry_blueprint.route('/available_strains', methods=('GET', ))
 @jwt_required()
@@ -55,7 +57,6 @@ def load_new_part():
 @biofoundry_blueprint.route('/submit_construct', methods=('POST', ))
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
-@cross_origin()
 def receive_construct():
     plasmid_data, email = validate_and_extract_construct(ConstructSubmissionSchema, request.get_json())
     id, name = build_plasmid_from_submission(plasmid_data, email)

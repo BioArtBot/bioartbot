@@ -44,6 +44,6 @@ mail = Mail()
 cache = Cache()
 jwt = JWTManager()
 argon2 = Argon2()
-cors = CORS() #TODO: Register CORS only for specific domains and possible for specific routes
+cors = CORS() #TODO: Register CORS only for specific domains and possibly for specific routes
 
 jwt.user_lookup_loader(user_lookup_callback)
