@@ -87,8 +87,8 @@ def receive_print_request():
     labware = request.get_json()['labware']
 
     option_args = {'notebook':False
-                    ,'palette': 'corning_96_wellplate_360ul_flat'
-                    ,'pipette': 'p300_single'
+                    ,'palette': 'cryo_35_tuberack_2000ul'
+                    ,'pipette': 'p20_single_gen2'
                     ,'canvas': labware['canvas']
                     }
 

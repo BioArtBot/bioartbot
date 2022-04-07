@@ -12,9 +12,9 @@ from web.database.models import (ArtpieceModel, SubmissionStatus, BacterialColor
 
 def read_args(args):
     if not args: args = {'notebook':False
-                        ,'palette':'corning_96_wellplate_360ul_flat'
-                        ,'pipette':'p300_single'
-                        ,'canvas': 'ccl_artbot_canvas_90mm_round'
+                        ,'palette':'cryo_35_tuberack_2000ul'
+                        ,'pipette':'p20_single_gen2'
+                        ,'canvas': 'bioartbot_petriplate_90mm_round'
                         }
     NOTEBOOK = args.pop('notebook')
     LABWARE = args #assume unused args are all labware
@@ -122,7 +122,7 @@ def optimize_print_order(list):
 
 def add_labware(template_string, labware):
     # replace labware placeholders with the proper Opentrons labware name, as specified in the arguments
-    labware['tiprack'] = 'opentrons_96_tiprack_200ul' if 'P300' in labware['pipette'] else 'opentrons_96_tiprack_10ul'
+    labware['tiprack'] = 'opentrons_96_tiprack_300ul' if 'p300' in labware['pipette'] else 'opentrons_96_tiprack_20ul'
     
     procedure = template_string.replace('%%PALETTE GOES HERE%%', labware['palette'])
     procedure = procedure.replace('%%CANVAS GOES HERE%%', labware['canvas'])
