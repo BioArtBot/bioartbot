@@ -115,8 +115,8 @@ class PlasmidModel(SurrogatePK, Model):
     __tablename__ = 'plasmids'
 
     global_id = Column(db.String(30), unique=True, nullable=False)
-    name = Column(db.String(20), unique=True, nullable=False)
-    friendly_name = Column(db.String(20), nullable=False)
+    name = Column(db.String(50), unique=True, nullable=False)
+    friendly_name = Column(db.String(50), nullable=False)
     description = Column(db.String(500), nullable=False)
     sequence = Column(db.Text())
     sequence_of_interest = Column(db.Text())
@@ -146,8 +146,8 @@ class GeneticPartsModel(SurrogatePK, Model):
     __tablename__ = 'genetic_parts'
 
     global_id = Column(db.String(30), unique=True, nullable=False)
-    name = Column(db.String(20), unique=True, nullable=False)
-    friendly_name = Column(db.String(20), nullable=False)
+    name = Column(db.String(50), unique=True, nullable=False)
+    friendly_name = Column(db.String(50), nullable=False)
     description = Column(db.String(500), nullable=False)
     sequence = Column(db.Text(), nullable=False)
     part_type = Column(db.String(20))
@@ -169,8 +169,8 @@ class StrainModel(SurrogatePK, Model):
     __tablename__ = 'strains'
 
     global_id = Column(db.String(30), unique=True, nullable=False)
-    name = Column(db.String(20), unique=True, nullable=False)
-    friendly_name = Column(db.String(20), nullable=False)
+    name = Column(db.String(50), unique=True, nullable=False)
+    friendly_name = Column(db.String(50), nullable=False)
     description = Column(db.String(500), nullable=False)
     background_strain = Column(db.String(30), nullable=False)
     status = Column(

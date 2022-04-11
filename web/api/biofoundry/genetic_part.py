@@ -45,4 +45,4 @@ class GeneticPart():
         self._model.delete()
 
     def __repr__(self):
-        return f'<GeneticPart: {self.name}>'
+        return f'<GeneticPart: {self._model.name}>'

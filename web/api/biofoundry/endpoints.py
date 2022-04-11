@@ -2,7 +2,7 @@ from flask import (Blueprint, jsonify, request)
 from flask_jwt_extended import jwt_required
 from flask_cors import cross_origin
 from .core import (validate_and_extract_objects, validate_and_extract_construct,
-                    save_objects_in_db, build_plasmid_from_submission)
+                    save_objects_in_db, build_plasmid_from_submission, extract_json_from_csv)
 from .genetic_part import GeneticPart
 from .strain import Strain
 from .plasmid import Plasmid
@@ -21,7 +21,7 @@ def get_available_parts():
     schema = GeneticPartSchema(many=True)
     serialized = schema.dump(available_parts)
 
-    insert_dict = {insert['id']: insert for insert in serialized}
+    insert_dict = {insert['global_id']: insert for insert in serialized}
 
     return jsonify({'assembly_standard': 'golden_gate_moclo', 'inserts': insert_dict}), 200
 
@@ -49,7 +49,12 @@ def get_available_plasmids():
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
 def load_new_part():
-    genetic_parts = validate_and_extract_objects(GeneticPartSchema, request.get_json())
+    args = request.args
+    if args.get('format') == 'csv':
+        json_object = extract_json_from_csv(request.files['csvfile'])
+    else:
+        json_object = request.get_json()
+    genetic_parts = validate_and_extract_objects(GeneticPartSchema, json_object)
     save_objects_in_db(genetic_parts)
 
     return jsonify({'data': None}), 201
