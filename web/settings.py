@@ -17,7 +17,7 @@ class Config(object):
 
     """CORS settings. Origins handled below."""
     CORS_SUPPORTS_CREDENTIALS = True
-    CORS_RESOURCES = [r"/biofoundry/*"]
+    CORS_RESOURCES = [r"/biofoundry/*", "/user/login"]
 
     """JWT settings."""
     UNSECURE_DEFAULT_JWT_SECRET_KEY = 'invalid-jwt-secret-key'
@@ -53,7 +53,7 @@ class DevConfig(Config):
     """Development configuration."""
     ENV = 'development'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(', ')
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(', ')
 
 class TestingConfig(Config):
     ENV = 'testing'

@@ -35,6 +35,9 @@ class GeneticPart():
 
         return cls(model)
 
+    def as_dict(self):
+        return self._model.__dict__
+
     def save(self):
         self._model.save()
     

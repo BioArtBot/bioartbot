@@ -14,6 +14,16 @@ def validate_and_extract_user_data(json_data, skipped_fields: tuple= (), new_use
         raise InvalidUsage.from_validation_error(err)
     return data
 
+def read_superusers():
+    """
+    Read all superusers from the database and return the email, created_at, and role
+    """
+    superusers = SuperUser.query.all()
+    return [{'id': s_user.id,
+             'email': s_user.email,
+             'created_at': s_user.created_at,
+             'role': s_user.role.value}
+            for s_user in superusers]
 
 def create_superuser(email, password, role = SuperUser.default_role()):
     s_user = SuperUser.from_email(email, role=role)

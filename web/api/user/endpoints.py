@@ -6,7 +6,7 @@ from flask_jwt_extended import (
         , set_access_cookies, set_refresh_cookies
     )
 from .core import (create_superuser, delete_superuser, validate_and_extract_user_data,
-                   update_superuser_role, update_superuser_password
+                   update_superuser_role, update_superuser_password, read_superusers
                   )
 from .exceptions import InvalidUsage, error_template
 from .user import SuperUser
@@ -45,10 +45,43 @@ def login():
     return resp, 200
 
 
+@user_blueprint.route('/get', methods=('GET', ))
+@jwt_required()
+@access_level_required(SuperUserRole.admin)
+def get_all():
+    """
+    Reads all superusers from the database.
+
+    Parameters:
+        none
+
+    Returns:
+        json:
+            users <JSON>: A list of all superusers, with the following schema
+                {user_id: <int>, email: <str>, role: <int>, created_at: <timestamp>}
+            count <int>: The number of users returned from the database.
+    """
+    users = read_superusers()
+    resp = jsonify({'users': users, 'count': len(users)})
+    return resp, 200
+
+
 @user_blueprint.route('/remove/<id>/<created_at_timestamp>', methods=('PUT', ))
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
 def remove(id, created_at_timestamp):
+    """
+    Removes the superuser with the given id. Request must also send the superuser's 
+    created_at_timestamp, as a check to prevent accidental deletion.
+    Parameters are part of the URL, not a JSON object.
+
+    Parameters:
+        id (int): The id of the superuser to be removed.
+        created_at_timestamp (timestamp): The created_at_timestamp of the superuser to be removed.
+
+    Returns:
+        json: A json object confirming the superuser's email, and a success boolean.
+    """
     email, success = delete_superuser(id, created_at_timestamp)
     resp = jsonify({'user': email, 'deleted': success})
     return resp, 200
@@ -58,6 +91,18 @@ def remove(id, created_at_timestamp):
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
 def create():
+    """
+    Creates a new superuser from data provided in a JSON object.
+
+    Parameters:
+        json:
+            email (str): The email of the superuser to be created.
+            password (str): The password of the superuser to be created.
+            role (str): The role of the superuser to be created (admin or printer).
+
+    Returns:
+        json: A json object giving the superuser's assigned id, and a success boolean.
+    """
     data = validate_and_extract_user_data(request.json, new_user=True)
     email, password, role = data['email'], data['password'], data['role']
 
@@ -71,6 +116,18 @@ def create():
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
 def update_role():
+    """
+    Updates a superuser's role from data provided in a JSON object.
+
+    Parameters:
+        json:
+            email (str): The email of the superuser to be updated.
+            role (str): The new role of the superuser (admin or printer).
+
+    Returns:
+        json: A json object confirming the superuser's email,
+              the old and new roles, and a success boolean.
+    """
     data = validate_and_extract_user_data(request.json, skipped_fields=('password',))
     email, requested_role = data['email'], data['role']
 
@@ -83,6 +140,19 @@ def update_role():
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
 def reset_password(created_at_timestamp):
+    """
+    Updates a superuser's password from data provided in a JSON object.
+    Requires the superuser's created_at_timestamp, as a check to prevent accidental password reset.
+
+    Parameters:
+        created_at_timestamp (timestamp): The created_at_timestamp of the superuser to be updated.
+        json:
+            email (str): The email of the superuser to be updated.
+            password (str): The new password of the superuser.
+
+    Returns:
+        json: A json object confirming the superuser's email, and a success boolean.
+    """
     data = validate_and_extract_user_data(request.json, skipped_fields=('role',))
     email, requested_password = data['email'], data['password']
 

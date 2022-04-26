@@ -35,7 +35,7 @@ class Strain():
     def create_from_plasmid(cls, plasmid: list):
         """builds a strain object from the plasmid in it"""
         pass #TODO make this do the thing it says it will do
-    
+  
     def save(self):
         self._model.save()
 

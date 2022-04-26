@@ -20,9 +20,13 @@ def get_available_color_mapping():
         g.color_mapping = {str(color.id): color.rgba for color in get_available_colors()}
     return g.color_mapping
 
-def set_color_strain(name, rgba: tuple, strain_id):
-    red, blue, green, opacity = rgba
-    strain = Strain.get_by_id(strain_id)
-    strain.set_application(1)
+def set_color_strain(name, red, green, blue, opacity, in_use = True, strain = None, strain_global_id = None):
+    if not opacity: opacity = 1.0
+    if not strain:
+        if not strain_global_id:
+            raise ValueError('Must specify either strain or strain_id')
+        else:
+            strain = Strain.get_by_id(strain_global_id)
+    # strain.application = 1 TODO properly set application
     
-    return BacterialColor(name, red, blue, green, opacity, strain=strain, in_use=True).save()
+    return BacterialColor(name=name, red=red, blue=blue, green=green, opacity=opacity, strain=strain, in_use=in_use).save()

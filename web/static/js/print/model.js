@@ -170,7 +170,7 @@ app.model = function() {
 	that.jobs = {
 		get: function() {
 			$.ajax({
-				url: 'print_jobs'
+				url: 'print_jobs?unprinted_only=false&confirmed_only=true'
 				, type: 'GET'
 				, dataType: 'json'
 				, cache: 'false'
