@@ -2,6 +2,9 @@ import datetime
 import json
 from marshmallow import ValidationError
 from jwt import (ExpiredSignatureError, PyJWTError)
+from sqlalchemy.exc import IntegrityError, DataError
+from web.api.biofoundry.exceptions import DBError
+from web.api.user.colors import BacterialColor
 from .serializers import ArtpieceSchema, StatusSchema, ColorSchema
 from .artpiece import (Artpiece, TokenIDMismatchError)
 from .exceptions import (UserSubmissionLimitException, MonthlySubmissionLimitException,
@@ -65,9 +68,9 @@ def confirm_artpiece(artpiece, token):
 
     return status
 
-def validate_and_extract_color_data(json_data):
+def validate_and_extract_color_data(json_data, update=False):
     try:
-        data = ColorSchema(many=True).load(json_data)
+        data = ColorSchema(many=True).load(json_data, partial=update)
     except ValidationError as err:
         raise InvalidUsage.from_validation_error(err)
     return data

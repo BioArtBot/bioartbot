@@ -1,7 +1,9 @@
+from sys import int_info
 from marshmallow import (fields, Schema, pre_load, pre_dump, post_load, validates, validates_schema, validate)
 from marshmallow.validate import (Length, Regexp, Range)
 from .validators import (validate_art_content_length, validate_color_keys, validate_pixels,
         validate_title, validate_canvas_size)
+from .exceptions import InvalidUsage
 from ...biofoundry.strain import Strain
 from ...file_manager import file_manager
 
@@ -89,10 +91,14 @@ class ColorSchema(Schema):
 
     @post_load
     def global_id_to_strain(self, in_data, **kwargs):
-        if hasattr(in_data, 'strain_global_id'):
-            in_data.strain = Strain.get_by_id(in_data.strain_global_id)
-            del in_data.strain_global_id
-        return in_data
+        try:
+            if 'strain_global_id' in in_data:
+                in_data['strain'] = Strain.get_by_id(in_data['strain_global_id'])
+                assert in_data['strain'] is not None
+                in_data.pop('strain_global_id')        
+            return in_data
+        except AssertionError:
+            raise InvalidUsage.bad_reference(f'Strain {in_data["strain_global_id"]}')
 
 
 class StatusSchema(Schema):

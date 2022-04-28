@@ -8,10 +8,12 @@ from .core import confirm_artpiece as core_confirm_artpiece
 from ..email import send_confirmation_email_async
 from ..exceptions import InvalidUsage
 from ..colors import (get_available_color_mapping, get_available_colors,
-                      get_available_colors_as_dicts, set_color_strain)
+                      get_available_colors_as_dicts, get_color_id_by_name, set_color_strain,
+                      delete_colors, BacterialColor)
 from ..utilities import access_level_required
 from .artpiece import Artpiece
 from .serializers import ArtpieceSchema, PrintableSchema, StatusSchema, ColorSchema
+from ...biofoundry.core import (extract_update_info, update_objects_in_db) #should probably move this generic function to a parent module
 from web.extensions import db
 from web.database.models import SuperUserRole
 from web.robot.art_processor import make_procedure
@@ -202,14 +204,65 @@ def create_color():
     """
     json_object = request.get_json()
     color_data_list = validate_and_extract_color_data(json_object)
-    [set_color_strain(**color_data) for color_data in color_data_list]
+    colors = [set_color_strain(**color_data) for color_data in color_data_list]
+    #TODO Handle duplicate data errors
 
-    #TODO color object does not persist in database
+    return jsonify({'success': True, 'colors_added':ColorSchema(many=True).dumps(colors)}), 201
 
-    return jsonify({'success': True}), 201
+@artpiece_blueprint.route('/colors/update', methods=('POST', ))
+@jwt_required()
+@access_level_required(SuperUserRole.printer)
+def update_color():
+    """
+    Update an existing color object in the database.
 
-def update_color(color): #TODO Update colors
-    pass #needs to update a color, including connecting it to a strain
+    Colors are updated by their name, which functions as a global_id.
+    Beyond this, only the fields that need to be updated need to be
+    supplied.
 
-def delete_color(color): #TODO Delete colors
-    pass #needs disconnect color from strain, then delete it
+    Parameters:
+        json:
+            to_update <list>: A list of objects, following the schema:
+                global_id <str>: The name of the color to update
+                update_data <JSON>: The new data to update the color with.
+                    Should follow the schema documented in the object type's
+                    'create' endpoint. Only data to update needs to be supplied.
+
+    Returns:
+        json:
+            success <bool>: True if the update was successful, False
+                otherwise
+            msg <str>: A message describing the success or failure
+                of the update
+    """
+    update_info = request.get_json()['to_update']
+    names_to_update, update_data = extract_update_info(update_info)
+    #We don't use the returned objects, but we do need to make sure the data is valid
+    colors = validate_and_extract_color_data(update_data, update=True)
+    ids_to_update = [get_color_id_by_name(name) for name in names_to_update]
+    success = update_objects_in_db(BacterialColor, ids_to_update, update_data)
+    #BUG: Strains don't update when strain_global_id is submitted
+
+    return jsonify({'success': success, 'msg': f'Successfully updated color'}), 201
+
+@artpiece_blueprint.route('/colors/delete', methods=('PUT', ))
+@jwt_required()
+@access_level_required(SuperUserRole.printer)
+def delete_color():
+    """
+    Delete color from the database. WARNING: Deleting a color will also delete
+    it's associated strain.
+    
+    Because unique names are required for colors,
+    colors are referenced by their names only. Colors must be supplied in a JSON
+    list of strings, even if there is only one color.
+
+    Parameters <list>:
+        name <str>: The name of the color to delete
+
+    Return: Success boolean as JSON
+    """
+    json_object = request.get_json()
+    success = delete_colors(json_object)
+
+    return jsonify({'success': success}), 201
