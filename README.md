@@ -80,12 +80,12 @@ If the pipette tip misses your agar, it's easiest to troubleshoot using the [Jup
 
 ### Materials:
 - Opentrons OT2 Liquid Handling Robot
-- 6-well 15mL tissue culture plates for liquid culture 'palette'
+- 2ml deepwell plates, or cryo tubes with cryo tube holder for liquid culture 'palette'
 - Omni-tray plates for canvases - one per artpiece
-- Standard 200ul tiprack
+- Standard 20ul tiprack
 
 ### Procedure in brief:
 - In a sterile environment:
 	- Pour LB agar with into omni-tray plates
-	- Transfer 5-10 mL of liquid color-producing e. coli culture into a 6-well plate
+	- Transfer ~1 mL of liquid color-producing e. coli culture into a deepwell plate
 - Follow instructions in OT app upon upload of procedure
