@@ -1,11 +1,13 @@
 """
-This script is populates the user database with a number of users for testing purposes.
+This script is populates the user database with a number of arbitrarily-named users for testing purposes.
 This can be used to test frontend apps and API endpoints for creating, reading, updating, and deleteing users.
 This script should not be used at all in production.
 
 Usage:
 After launching the docker container and migrating the database with `docker-compose exec artbot flask db upgrade`,
 execute `docker-compose exec artbot python -m tests.seed_db.py` to fill the dev database with test users.
+You may run the seed script as many times as you like. If a username already exists in the database, the script
+will simply add 1 to the number at the end of the name until it hits a name that is not in use.
 
 Note that this does not use the test database, but rather the dev database. So these users will be instantiated in
 your development environment and won't be reset until you explicitly reset them, or restart your docker image.
