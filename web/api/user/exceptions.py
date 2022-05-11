@@ -10,6 +10,7 @@ _USER_NOT_FOUND = error_template('user_not_found', 'requested user not found')
 _USER_EXISTS = error_template('user_exists', 'cannot create user that already exists')
 _FORBIDDEN = error_template('forbidden', 'user does not have access')
 _BAD_REFERENCE = error_template('bad_reference', 'Referenced item doesn\'t exist')
+_NOT_IMPLEMENTED = error_template('not_implemented', 'This endpoint has not been implemented')
 
 class InvalidUsage(Exception):
     status_code = 400
@@ -62,3 +63,7 @@ class InvalidUsage(Exception):
     def bad_reference(cls, message=None):
         _BAD_REFERENCE['errors'][0]['title'] += ": " + str(message)
         return cls(_BAD_REFERENCE, status_code=404)
+
+    @classmethod
+    def not_implemented(cls):
+        return cls(_NOT_IMPLEMENTED, status_code=501)

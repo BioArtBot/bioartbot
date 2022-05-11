@@ -136,26 +136,32 @@ def update_role():
     return resp, 200
 
 
-@user_blueprint.route('/reset_password/<created_at_timestamp>', methods=('POST', ))
+@user_blueprint.route('/reset_password/', methods=('POST', ))
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
-def reset_password(created_at_timestamp):
+def reset_password():
     """
     Updates a superuser's password from data provided in a JSON object.
-    Requires the superuser's created_at_timestamp, as a check to prevent accidental password reset.
+    Must send the current password in addition to the requested new password.
+    This endpoint is intended to be reached by a password reset screen accessed by
+    the superuser themselves.
 
     Parameters:
-        created_at_timestamp (timestamp): The created_at_timestamp of the superuser to be updated.
         json:
             email (str): The email of the superuser to be updated.
-            password (str): The new password of the superuser.
+            old_password (str): The current password of the superuser.
+            new_password (str): The new password of the superuser.
 
     Returns:
         json: A json object confirming the superuser's email, and a success boolean.
     """
+    """
     data = validate_and_extract_user_data(request.json, skipped_fields=('role',))
-    email, requested_password = data['email'], data['password']
+    email, old_password, requested_password = data['email'], data['old_password'], data['password']
 
-    email, success = update_superuser_password(email, requested_password, created_at_timestamp)
+    email, success = update_superuser_password(email, old_password, requested_password)
     resp = jsonify({'user': email, 'success': success})
     return resp, 200
+    """
+    #TODO implement this as a full password reset flow
+    raise InvalidUsage.not_implemented()
