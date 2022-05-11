@@ -52,6 +52,10 @@ class MetaUser():
     def default_role(cls):
         return cls.roles()[0]
 
+    @classmethod
+    def get_all(cls):
+        return cls._get_model().query.all()
+
     def delete(self):
         return self._model.delete(commit=False)
     

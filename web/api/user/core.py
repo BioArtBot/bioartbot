@@ -18,7 +18,7 @@ def read_superusers():
     """
     Read all superusers from the database and return the email, created_at, and role
     """
-    superusers = SuperUser.query.all()
+    superusers = SuperUser.get_all()
     return [{'id': s_user.id,
              'email': s_user.email,
              'created_at': s_user.created_at,
