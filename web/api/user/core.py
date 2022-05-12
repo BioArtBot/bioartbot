@@ -40,9 +40,10 @@ def update_superuser_role(email, new_role):
     db.session.commit()
     return s_user.email, old_role.value, s_user.role.value
 
-def update_superuser_password(email, new_password, created_at_timestamp):
+def update_superuser_password(email, old_password, new_password):
     s_user = SuperUser.get_by_email(email)
-    validate_user_token(s_user, created_at_timestamp)
+    if not s_user.is_password_valid(old_password):
+        raise InvalidUsage.bad_password()
     s_user.set_password(new_password)
 
     db.session.commit()

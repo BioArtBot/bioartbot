@@ -148,18 +148,15 @@ def reset_password():
     Parameters:
         json:
             email (str): The email of the superuser to be updated.
-            old_password (str): The current password of the superuser.
+            password (str): The current password of the superuser.
             new_password (str): The new password of the superuser.
 
     Returns:
         json: A json object confirming the superuser's email, and a success boolean.
     """
-    """
     data = validate_and_extract_user_data(request.json, skipped_fields=('role',))
-    email, old_password, requested_password = data['email'], data['old_password'], data['password']
+    email, old_password, requested_password = data['email'], data['password'], data['new_password']
 
     email, success = update_superuser_password(email, old_password, requested_password)
     resp = jsonify({'user': email, 'success': success})
     return resp, 200
-    """
-    return "OK", 200
