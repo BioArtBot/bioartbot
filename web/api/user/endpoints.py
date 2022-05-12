@@ -38,7 +38,7 @@ def login():
 
     # Set the JWTs and the CSRF double submit protection cookies
     # in this response
-    resp = jsonify({'login': True, 'user':user.email})
+    resp = jsonify({'login': True, 'user':user.email, 'role':user.role.value})
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
 
@@ -134,7 +134,6 @@ def update_role():
     email, old_role, new_role = update_superuser_role(email, requested_role)
     resp = jsonify({'user': email, 'old_role': old_role, 'new_role': new_role})
     return resp, 200
-
 
 @user_blueprint.route('/reset_password/', methods=('POST', ))
 @jwt_required()
