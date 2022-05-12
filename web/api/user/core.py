@@ -1,5 +1,6 @@
 from functools import partial
 from marshmallow import ValidationError
+from flask_jwt_extended import get_current_user
 from web.extensions import db
 from .validators import validate_user_token
 from .serializers import SuperUserSchema
@@ -34,6 +35,8 @@ def create_superuser(email, password, role = SuperUser.default_role()):
 
 def update_superuser_role(email, new_role):
     s_user = SuperUser.get_by_email(email)
+    if s_user.email == get_current_user().email:
+        raise InvalidUsage.cannot_change_own_role()
     old_role = s_user.role
     s_user.set_role(new_role)
 

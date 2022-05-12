@@ -11,6 +11,7 @@ _USER_EXISTS = error_template('user_exists', 'cannot create user that already ex
 _FORBIDDEN = error_template('forbidden', 'user does not have access')
 _BAD_REFERENCE = error_template('bad_reference', 'Referenced item doesn\'t exist')
 _NOT_IMPLEMENTED = error_template('not_implemented', 'This endpoint has not been implemented')
+_CANNOT_CHANGE_OWN_ROLE = error_template('cannot_change_own_role', 'You cannot change your own role')
 
 class InvalidUsage(Exception):
     status_code = 400
@@ -67,3 +68,7 @@ class InvalidUsage(Exception):
     @classmethod
     def not_implemented(cls):
         return cls(_NOT_IMPLEMENTED, status_code=501)
+    
+    @classmethod
+    def cannot_change_own_role(cls):
+        return cls(_CANNOT_CHANGE_OWN_ROLE, status_code=403)
