@@ -47,7 +47,7 @@ def login():
 
 @user_blueprint.route('/get', methods=('GET', ))
 @jwt_required()
-@access_level_required(SuperUserRole.admin)
+@access_level_required(SuperUserRole.printer)
 def get_all():
     """
     Reads all superusers from the database.
@@ -137,26 +137,34 @@ def update_role():
 
 @user_blueprint.route('/reset_password/', methods=('POST', ))
 @jwt_required()
-@access_level_required(SuperUserRole.admin)
+@access_level_required(SuperUserRole.printer)
 def reset_password():
     """
     Updates a superuser's password from data provided in a JSON object.
-    Must send the current password in addition to the requested new password.
+    If the requesting superuser is not an admin, must send the current
+    password in addition to the requested new password. Admins may change
+    any other superuser's password.
     This endpoint is intended to be reached by a password reset screen accessed by
-    the superuser themselves.
+    the superuser themselves, or by an admin working through a dashboard.
 
     Parameters:
         json:
             email (str): The email of the superuser to be updated.
-            password (str): The current password of the superuser.
             new_password (str): The new password of the superuser.
+            password (str): The current password of the superuser. Optional if the
+                user sending the request is an admin.
 
     Returns:
         json: A json object confirming the superuser's email, and a success boolean.
     """
     data = validate_and_extract_user_data(request.json, skipped_fields=('role',))
-    email, old_password, requested_password = data['email'], data['password'], data['new_password']
+    old_password = data.get('password') #Could be None, if admin is requesting
+    email, requested_password = data['email'], data['new_password']
 
     email, success = update_superuser_password(email, old_password, requested_password)
-    resp = jsonify({'user': email, 'success': success})
+    warnings = []
+    if not old_password: warnings.append(
+        'WARNING: A future version of this endpoint will require a current password, even for Admins'
+        )
+    resp = jsonify({'user': email, 'success': success, 'warnings': warnings})
     return resp, 200

@@ -5,10 +5,12 @@ from web.extensions import db
 from .validators import validate_user_token
 from .serializers import SuperUserSchema
 from .exceptions import InvalidUsage
-from .user import SuperUser
+from .user import SuperUser, SuperUserRole
 
 
 def validate_and_extract_user_data(json_data, skipped_fields: tuple= (), new_user: bool=False):
+    if get_current_user().role == SuperUserRole.admin:
+            skipped_fields += ('password',)
     try:
         data = SuperUserSchema(new_user).load(json_data, partial=skipped_fields)
     except ValidationError as err:
@@ -45,8 +47,8 @@ def update_superuser_role(email, new_role):
 
 def update_superuser_password(email, old_password, new_password):
     s_user = SuperUser.get_by_email(email)
-    if not s_user.is_password_valid(old_password):
-        raise InvalidUsage.bad_password()
+    if not s_user.is_password_valid(old_password) and get_current_user().role != SuperUserRole.admin:
+        raise InvalidUsage.bad_login()
     s_user.set_password(new_password)
 
     db.session.commit()

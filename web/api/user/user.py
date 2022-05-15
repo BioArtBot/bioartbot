@@ -66,6 +66,7 @@ class MetaUser():
         self._model.password_hash = argon2.password_hasher.hash(password)
 
     def is_password_valid(self, password):
+        if not password: return False
         try:
             argon2.password_hasher.verify(self.password_hash, password)
         except argon2.exceptions.VerificationError:
