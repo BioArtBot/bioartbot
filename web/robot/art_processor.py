@@ -82,7 +82,7 @@ def plate_location_map(coord, plate, grid_size):
     return x, y, z
 
 #Finds the closest point from the given point
-def min_dist_point(start, remaininglist):
+def min_dist_point(start, remaininglist, required_gap = 0):
 
     # Initialize minimum distance to max val and null for minimal point
     min_dist = sys.maxsize
@@ -92,9 +92,12 @@ def min_dist_point(start, remaininglist):
     #then keep that point
     for v in remaininglist:
         dist = euclidean_distance(start, v)
-        if dist < min_dist:
+        if dist < min_dist and dist >= required_gap:
             min_dist = dist
             min_point = v
+
+    if min_point is None: #If no point that is far enough away is found, just use the closest point
+        min_point = min_dist_point(start, remaininglist, required_gap = 0)
 
     return min_point
 
@@ -112,7 +115,7 @@ def optimize_print_order(list):
     
     #Once added to the ordered list, it removes from previous list
     while len(list) != 0:
-        closest = min_dist_point(current, list)
+        closest = min_dist_point(current, list) #TODO: Figure out what units to use and how those translate to mm so we know what kind of gap is reasonable
         list.remove(closest)
         ordered_list.append(closest)
         current = closest
