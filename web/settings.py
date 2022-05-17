@@ -17,7 +17,7 @@ class Config(object):
 
     """CORS settings. Origins handled below."""
     CORS_SUPPORTS_CREDENTIALS = True
-    CORS_RESOURCES = [r"/biofoundry/*", "/user/login"]
+    CORS_RESOURCES = [r"/biofoundry/*", r"/user/*"]
 
     """JWT settings."""
     UNSECURE_DEFAULT_JWT_SECRET_KEY = 'invalid-jwt-secret-key'
