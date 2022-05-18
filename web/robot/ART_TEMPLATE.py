@@ -23,9 +23,6 @@ def distribute_to_agar(pipette, vol, source, destination, disposal_vol):
         if (cnt + 1) % 150 == 0:
             needs_new_tip = True
 
-        if not pipette.has_tip:
-            pipette.pick_up_tip()
-
         if pipette.current_volume < (vol + disposal_vol):
             if needs_new_tip:
                 if pipette.has_tip: pipette.drop_tip()
@@ -41,6 +38,7 @@ def distribute_to_agar(pipette, vol, source, destination, disposal_vol):
                 asp_vol = remaining_vol + disposal_vol - pipette.current_volume
 
             pipette.aspirate(asp_vol, source)
+            if vol < 0.3: pipette.touch_tip(source) #avoid blotches from liquid stuck to the outside of the tip
 
         pipette.move_to(well)
         pipette.dispense(vol)
