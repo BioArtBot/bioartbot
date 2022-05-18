@@ -53,9 +53,7 @@ def canvas_slot_generator():
         yield str(slot)
 
 
-# BUG: overwrites locations if same title
-def plate_location_map(coord, plate, grid_size):
-    #Note coordinates stored as [y,x]
+def get_spacing(plate, grid_size):
     max_grid_postion = {'x':grid_size['x']-1, 'y':grid_size['y']-1}
     if plate.shape == 'round': #inscribe in circle
         aspect_ratio = max_grid_postion['x'] / max_grid_postion['y']
@@ -74,6 +72,11 @@ def plate_location_map(coord, plate, grid_size):
         y_max_mm = wellspacing * max_grid_postion['y'] / 2
     well_radius = min(plate.x_radius_mm, plate.y_radius_mm)
 
+    return well_radius, wellspacing, x_max_mm, y_max_mm
+
+
+def plate_location_map(coord, plate, well_radius, wellspacing, x_max_mm, y_max_mm):
+    #Note coordinates stored as [y,x]
     x = (wellspacing * coord[1] - x_max_mm) / well_radius
     y = (wellspacing * -coord[0] + y_max_mm) / well_radius
 
@@ -82,7 +85,14 @@ def plate_location_map(coord, plate, grid_size):
     return x, y, z
 
 #Finds the closest point from the given point
-def min_dist_point(start, remaininglist, required_gap = 0):
+def min_dist_point(start, remaininglist, cache = None, required_gap = 0):
+
+    def point_close_to_cache(point):
+        if cache:
+            for cached_point in cache:
+                if round(euclidean_distance(cached_point, point),5) < required_gap:
+                    return True
+        return False
 
     # Initialize minimum distance to max val and null for minimal point
     min_dist = sys.maxsize
@@ -92,11 +102,15 @@ def min_dist_point(start, remaininglist, required_gap = 0):
     #then keep that point
     for v in remaininglist:
         dist = euclidean_distance(start, v)
-        if dist < min_dist and dist >= required_gap:
-            min_dist = dist
-            min_point = v
+        if dist < min_dist and round(dist,5) >= required_gap:
+            if not point_close_to_cache(v):
+                min_dist = dist
+                min_point = v
+
+    print(f'final point taken: {min_point}')
 
     if min_point is None: #If no point that is far enough away is found, just use the closest point
+        print('no point found, using closest')
         min_point = min_dist_point(start, remaininglist, required_gap = 0)
 
     return min_point
@@ -105,17 +119,30 @@ def min_dist_point(start, remaininglist, required_gap = 0):
 def euclidean_distance(start, end):
     return math.sqrt((start[0] - end[0])**2 +(start[1] - end[1])**2)
 
-#Returns an ordered list from an unordered list
-def optimize_print_order(list):
+def optimize_print_order(list, units_per_mm):
+    """
+    Accepts an aribitrary list of points and returns that list in an
+    order that minimizes the total distance traveled by the pipette.
+    For very small distances between points (<2mm), the travel distance
+    is optimized as much as possible, while not allowing points that are
+    next to each other to be placed one after another. This is to ensure
+    that the points have some time to dry.
+    """
 
     #Starts with first item in list.
     current = list[0]
     ordered_list = [current]
+    cache = []
     list.remove(current)
+
+    minimum_sequential_distance = 2 * units_per_mm #Assume 2mm required between subsequent points to give time to dry
     
     #Once added to the ordered list, it removes from previous list
     while len(list) != 0:
-        closest = min_dist_point(current, list) #TODO: Figure out what units to use and how those translate to mm so we know what kind of gap is reasonable
+        closest = min_dist_point(current, list, cache, required_gap=minimum_sequential_distance)
+        cache.append(closest)
+        if len(cache) > 10:
+            cache.pop(0)
         list.remove(closest)
         ordered_list.append(closest)
         current = closest
@@ -145,9 +172,11 @@ def add_pixel_locations(template_string, artpieces, canvas):
     pixels_by_color = dict()
     for artpiece in artpieces:
         grid_size = artpiece.canvas_size
+        well_radius, wellspacing, x_max_mm, y_max_mm = get_spacing(canvas, grid_size)
         for color in artpiece.art:
             pixel_list = optimize_print_order(
-                [plate_location_map(pixel, canvas, grid_size) for pixel in artpiece.art[color]]
+                [plate_location_map(pixel, canvas, well_radius, wellspacing, x_max_mm, y_max_mm) for pixel in artpiece.art[color]],
+                units_per_mm = 1 / well_radius
             )
             if color not in pixels_by_color:
                 pixels_by_color[color] = dict()

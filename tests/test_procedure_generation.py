@@ -6,6 +6,7 @@ from difflib import ndiff
 from flask import current_app
 from web.robot.art_processor import (optimize_print_order,
                                      euclidean_distance,
+                                     get_spacing,
                                      plate_location_map,
                                      make_procedure
 )
@@ -41,7 +42,8 @@ def art_dimensions(canvas_object_in_db, art_from_test_db):
 
     for color in artpiece.art:
         for pixel in artpiece.art[color]:
-            plate_position = plate_location_map(pixel, canvas, grid_size)
+            well_radius, wellspacing, x_max_mm, y_max_mm = get_spacing(canvas, grid_size)
+            plate_position = plate_location_map(pixel, canvas, well_radius, wellspacing, x_max_mm, y_max_mm)
             all_plate_positions.append(plate_position)
             all_pixels.append(pixel)
     return all_plate_positions, all_pixels, canvas, grid_size
@@ -51,7 +53,7 @@ def art_dimensions(canvas_object_in_db, art_from_test_db):
 #From a known artpiece, ensure that the optimum path is found
 @pytest.mark.parametrize('unordered_path', [[[0, 0], [25, 0], [0, 1], [25, 1]]])
 def test_optimize_print_order_strong(unordered_path):  
-    ordered_path = optimize_print_order(unordered_path)
+    ordered_path = optimize_print_order(unordered_path, units_per_mm=1/100) #assume a very big plate
     assert ordered_path == [[0, 0], [0, 1], [25, 1], [25, 0]]
 
 #Generate a random artpiece and ensure each optimized print path is equal or shorter than unoptimized
@@ -67,8 +69,17 @@ def test_optimize_print_order_weak(art_params, generate_random_art):
     for color in unordered_art:
         unordered_path = unordered_art[color]
         unordered_distance = calc_path_distance(unordered_path)
-        ordered_path = optimize_print_order(unordered_path)
+        ordered_path = optimize_print_order(unordered_path, units_per_mm=1/100) #assume a very big plate
         assert calc_path_distance(ordered_path) <= unordered_distance
+
+#From a known artpiece, ensure that it works in high-resolution mode
+@pytest.mark.parametrize('unordered_path', [[[0, 0], [1, 0], [0, 1/25], [1, 1/25], [0, 2/25], [1, 2/25],
+                                             [0, 3/25], [1, 3/25], [0, 4/25], [1, 4/25], [0, 5/25], [1, 5/25],
+                                             [0, 6/25], [1, 6/25]]])
+def test_optimize_print_order_hi_res(unordered_path):  
+    ordered_path = optimize_print_order(unordered_path, units_per_mm=1/25) #plate is quite small
+    assert ordered_path == [[0, 0], [0, 2/25], [0, 4/25], [0, 6/25], [1, 6/25], [1, 4/25], [1, 2/25], [1, 0],
+                            [1, 1/25], [1, 3/25], [1, 5/25], [0, 5/25], [0, 1/25], [0, 3/25]]
 
 @pytest.mark.usefixtures('test_app', 'clear_database')
 @pytest.mark.parametrize('num_artpieces', [1,2,9])
