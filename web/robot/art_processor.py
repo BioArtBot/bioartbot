@@ -5,6 +5,8 @@ from datetime import datetime
 import os
 import sys
 import math
+import numpy as np
+import pandas as pd
 from contextlib import contextmanager
 
 from web.api.lab_objects.lab_objects import LabObject, LabObjectPropertyCollection #Uncomfortable with this dependency
@@ -84,70 +86,58 @@ def plate_location_map(coord, plate, well_radius, wellspacing, x_max_mm, y_max_m
 
     return x, y, z
 
-#Finds the closest point from the given point
-def min_dist_point(start, remaininglist, cache = None, required_gap = 0):
+def module_to_last(p1,p2):
+    module = np.sqrt((p1["x"] - p2[0])**2 + (p1["y"] - p2[1])**2)
+    return module
 
-    def point_close_to_cache(point):
-        if cache:
-            for cached_point in cache:
-                if round(euclidean_distance(cached_point, point),5) < required_gap:
-                    return True
-        return False
+def register_pixels_too_close(pixels_too_close, new_pixels):
+    #reduce all existing time-to-live counters by 1
+    pixels_too_close.ttl = pixels_too_close.ttl - 1
 
-    # Initialize minimum distance to max val and null for minimal point
-    min_dist = sys.maxsize
-    min_point = None
+    #format new pixels and add them to existing list
+    new_pixels_with_ttl = pd.DataFrame(columns = ["pixel_index", "ttl"])
+    new_pixels_with_ttl["pixel_index"] = new_pixels.index
+    new_pixels_with_ttl["ttl"] = 10
 
-    # Search for nearest point if distance is smaller than previous
-    #then keep that point
-    for v in remaininglist:
-        dist = euclidean_distance(start, v)
-        if dist < min_dist and round(dist,5) >= required_gap:
-            if not point_close_to_cache(v):
-                min_dist = dist
-                min_point = v
+    final_pixels = pd.concat([pixels_too_close, new_pixels_with_ttl], axis=0)
 
-    print(f'final point taken: {min_point}')
+    #if a pixel was already in the list, drop the old one so that we use the new one with ttl=10
+    final_pixels = final_pixels.drop_duplicates(subset=["pixel_index"], keep='last')
 
-    if min_point is None: #If no point that is far enough away is found, just use the closest point
-        print('no point found, using closest')
-        min_point = min_dist_point(start, remaininglist, required_gap = 0)
+    #Drop anything where the time-to-live = 0
+    final_pixels = final_pixels.loc[final_pixels.ttl > 0]
 
-    return min_point
+    return final_pixels
 
-#Finds Euclidean Distance Given Two Points
-def euclidean_distance(start, end):
-    return math.sqrt((start[0] - end[0])**2 +(start[1] - end[1])**2)
+def optimize_print_order(unoptimized_list, units_per_mm, minimum_module_mm=2):
 
-def optimize_print_order(list, units_per_mm):
-    """
-    Accepts an aribitrary list of points and returns that list in an
-    order that minimizes the total distance traveled by the pipette.
-    For very small distances between points (<2mm), the travel distance
-    is optimized as much as possible, while not allowing points that are
-    next to each other to be placed one after another. This is to ensure
-    that the points have some time to dry.
-    """
+    minimum_module_unit = minimum_module_mm * units_per_mm
+    # add the first pixel to optimized_list
+    optimized_list = [unoptimized_list[0]]
 
-    #Starts with first item in list.
-    current = list[0]
-    ordered_list = [current]
-    cache = []
-    list.remove(current)
+    #calculate the module for the rest of pixels
+    # dataframe from columns x and y
+    df = pd.DataFrame(unoptimized_list[1:], columns=["x","y"])
 
-    minimum_sequential_distance = 2 * units_per_mm #Assume 2mm required between subsequent points to give time to dry
-    
-    #Once added to the ordered list, it removes from previous list
-    while len(list) != 0:
-        closest = min_dist_point(current, list, cache, required_gap=minimum_sequential_distance)
-        cache.append(closest)
-        if len(cache) > 10:
-            cache.pop(0)
-        list.remove(closest)
-        ordered_list.append(closest)
-        current = closest
-    
-    return ordered_list
+    pixels_too_close = pd.DataFrame(columns=["pixel_index", "ttl"])
+
+    while len(df) > 0:
+        df["module"] = df.apply(module_to_last, args=(optimized_list[-1:]),axis=1)
+        pixels_too_close = register_pixels_too_close(pixels_too_close, df[df["module"] <= minimum_module_unit])
+        pixels_far_enough = df.loc[~df.index.isin(pixels_too_close.pixel_index)]
+        # If there are pixels far enough, add the nearer one to optimized_list
+        if len(pixels_far_enough) > 0:
+            # add the nearest pixel to optimized_list
+            next_pixel = pixels_far_enough.loc[pixels_far_enough["module"].idxmin()][["x","y"]]
+        else:
+            # if there are no pixels far enough, add the fardest pixel to optimized_list
+            next_pixel = df.loc[df["module"].idxmax()][["x","y"]]
+
+        optimized_list = optimized_list + [next_pixel.tolist()]
+        # remove it from the df
+        df = df[df.index != next_pixel.name]
+
+    return optimized_list
 
 
 def add_labware(template_string, labware):
