@@ -119,6 +119,30 @@ def min_dist_point(start, remaininglist, cache = None, required_gap = 0):
 def euclidean_distance(start, end):
     return math.sqrt((start[0] - end[0])**2 +(start[1] - end[1])**2)
 
+def create_segments(full_list):
+    #create a grid from a list of tuples and return a list of lists
+
+    #There is no reason to make segments of very small lists
+    if len(full_list) < 60:
+        return [full_list]
+
+    segments = []
+    num_segments = 20
+
+    x_num_segments = int(math.sqrt(num_segments))
+    x_segment_length = int(len(full_list) / x_num_segments)
+    full_list.sort(key=lambda x: x[0])
+    x_segments = [full_list[i:i+x_segment_length] for i in range(0, len(full_list), x_segment_length)]
+
+    y_num_segments = int(math.ceil(num_segments / x_num_segments))
+    for x_segment in x_segments:
+        x_segment.sort(key=lambda x: x[1])
+        y_segment_length = int(math.ceil(len(x_segment) / y_num_segments))
+        y_segments = [x_segment[i:i+y_segment_length] for i in range(0, len(x_segment), y_segment_length)]
+        segments.extend(y_segments)
+
+    return segments
+
 def optimize_print_order(list, units_per_mm):
     """
     Accepts an aribitrary list of points and returns that list in an
@@ -130,22 +154,28 @@ def optimize_print_order(list, units_per_mm):
     """
 
     #Starts with first item in list.
-    current = list[0]
-    ordered_list = [current]
-    cache = []
-    list.remove(current)
+    
+    ordered_list = []
+
+    segments = create_segments(list)
 
     minimum_sequential_distance = 2 * units_per_mm #Assume 2mm required between subsequent points to give time to dry
     
-    #Once added to the ordered list, it removes from previous list
-    while len(list) != 0:
-        closest = min_dist_point(current, list, cache, required_gap=minimum_sequential_distance)
-        cache.append(closest)
-        if len(cache) > 10:
-            cache.pop(0)
-        list.remove(closest)
-        ordered_list.append(closest)
-        current = closest
+    for segment in segments:
+        current = segment[0]
+        ordered_list.append(current)
+        cache = []
+        segment.remove(current)
+
+        #Once added to the ordered list, it removes from previous list
+        while len(segment) != 0:
+            closest = min_dist_point(current, segment, cache, required_gap=minimum_sequential_distance)
+            cache.append(closest)
+            if len(cache) > 10:
+                cache.pop(0)
+            segment.remove(closest)
+            ordered_list.append(closest)
+            current = closest
     
     return ordered_list
 
