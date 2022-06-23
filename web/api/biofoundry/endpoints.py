@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_cors import cross_origin
 from .core import (validate_and_extract_objects, validate_and_extract_construct,
                     save_objects_in_db, build_plasmid_from_parts, extract_json_from_csv,
-                    delete_objects, update_objects_in_db, extract_update_info)
+                    delete_objects, update_objects_in_db, extract_update_info, build_protocol_from_plasmid)
 from .genetic_part import GeneticPart
 from .strain import Strain
 from .plasmid import Plasmid
@@ -262,8 +262,17 @@ def receive_construct():
     return jsonify({'status':'success', 'msg': msg, 'data': {'plasmid_id':id,'name':name}}), 201
 
 
+@biofoundry_blueprint.route('/get_assembly_protocol', methods=('POST', ))
+@jwt_required()
+@access_level_required(SuperUserRole.admin)
 def build_protocol():
-    pass
+    """
+    Endpoint to build an assembly protocol for a plasmid
+
+    Not implemented.
+    """
+    return build_protocol_from_plasmid() 
+
 
 def update_strain_status():
     pass

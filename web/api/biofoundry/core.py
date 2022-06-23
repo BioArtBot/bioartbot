@@ -106,3 +106,6 @@ def validate_and_extract_construct(schema, json_data):
 def build_plasmid_from_parts(plasmid_data, email):
     plasmid = Plasmid.create_from_parts(**plasmid_data, status='Submitted', submitter=email)
     return plasmid.id, plasmid.name
+
+def build_protocol_from_plasmid():
+    raise InvalidUsage.not_implemented()
