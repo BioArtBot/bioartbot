@@ -1,5 +1,8 @@
-from web.database.models import StrainModel
+from web.database.models import StrainModel, ApplicationModel
 #from .serializers import StrainSchema
+
+def bioart_application():
+    return ApplicationModel.query.filter(ApplicationModel.name=='bioart').one_or_none()
 
 _Model = StrainModel
 
@@ -21,11 +24,11 @@ class Strain():
         return _Model.query.filter(_Model.global_id == id).one_or_none()
 
     @classmethod
-    def create(cls, kwargs):
+    def create(cls, **kwargs):
         """Build a strain object"""
 
         if 'friendly_name' not in kwargs: kwargs['friendly_name'] = kwargs['name']
-        kwargs['application'] = 'bioart'
+        kwargs['application'] = bioart_application()
 
         model = _Model(**kwargs)
 

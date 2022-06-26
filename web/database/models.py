@@ -13,6 +13,9 @@ class SubmissionStatus(Enum):
     processing = 'Processing'
     processed = 'Processed'
 
+    def __str__(self):
+        return self.value
+
 #Stores all submitted art and allows it to be referenced later by the robot interface
 class ArtpieceModel(SurrogatePK, Model):
     __tablename__ = 'artpieces'

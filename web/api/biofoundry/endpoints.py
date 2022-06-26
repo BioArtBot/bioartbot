@@ -3,14 +3,15 @@ from flask_jwt_extended import jwt_required
 from flask_cors import cross_origin
 from .core import (validate_and_extract_objects, validate_and_extract_construct,
                     save_objects_in_db, build_plasmid_from_parts, extract_json_from_csv,
-                    delete_objects, update_objects_in_db, extract_update_info, build_protocol_from_plasmid)
+                    delete_objects, update_objects_in_db, extract_update_info,
+                    build_protocol_from_plasmid, infer_transformation_data)
 from .genetic_part import GeneticPart
 from .strain import Strain
 from .plasmid import Plasmid
 from .serializers import (GeneticPartSchema, PlasmidSchema, StrainSchema,
                           ConstructSubmissionSchema)
 from ..user.utilities import access_level_required #TODO bad dependency
-from web.database.models import SuperUserRole
+from web.database.models import SubmissionStatus, SuperUserRole
 
 
 biofoundry_blueprint = Blueprint('biofoundry', __name__, url_prefix='/biofoundry')
@@ -32,7 +33,7 @@ def get_available_parts():
             inserts <JSON>: A dict of all genetic parts, with global_id
                 as key, each containing the following fields:
                 {
-                 gloabl_id: <int>,
+                 gloabl_id: <str>,
                  name: <str>,
                  friendly_name: <str>,
                  description: <str>,
@@ -64,7 +65,7 @@ def get_available_strains():
             data <JSON>: A list of all strains, each containing the
                 following fields:
                     {
-                    gloabl_id: <int>,
+                    gloabl_id: <str>,
                     name: <str>,
                     friendly_name: <str>,
                     description: <str>,
@@ -92,7 +93,7 @@ def get_available_plasmids():
             data <JSON>: A list of all plasmids, each containing the
                 following fields:
                     {
-                    gloabl_id: <int>,
+                    gloabl_id: <str>,
                     name: <str>,
                     friendly_name: <str>,
                     description: <str>,
@@ -125,7 +126,11 @@ def load_new_object(object):
             'part', 'plasmid', or 'strain'
         json:
             an object or list of objects, following the schema documented
-            in the respective object's 'get' endpoint
+            in the respective object's 'get' endpoint.
+            Parts inside of Plasmids should be sent with the key
+                "insert_ids", a list of global_ids of GeneticParts.
+            Plasmids inside of Strains should be sent with the key
+                "plasmid_ids", a list of global_ids of Plasmids.
         files (optional):
             A CSV file containing the data to upload. If supplied,
             it should be called 'csvfile' and be of type 'text/csv'
@@ -209,6 +214,10 @@ def update_object(object):
                 update_data <JSON>: The new data to update the object with.
                     Should follow the schema documented in the object type's
                     'get' endpoint. Only data to update needs to be supplied.
+                    Parts inside of Plasmids should be sent with the key
+                        "insert_ids", a list of global_ids of GeneticParts.
+                    Plasmids inside of Strains should be sent with the key
+                        "plasmid_ids", a list of global_ids of Plasmids.
 
     Returns:
         json:
@@ -267,12 +276,57 @@ def receive_construct():
 @access_level_required(SuperUserRole.admin)
 def build_protocol():
     """
-    Endpoint to build an assembly protocol for a plasmid
+    Endpoint to build an assembly protocol for a plasmid.
+    Marks plasmid as "Processing" if it is currently "Submitted"
 
     Not implemented.
     """
     return build_protocol_from_plasmid() 
 
 
-def update_strain_status():
-    pass
+@biofoundry_blueprint.route('/transform_from_plasmid', methods=('POST', ))
+@jwt_required()
+@access_level_required(SuperUserRole.admin)
+def transform_from_plasmid():
+    """
+    Creates a new strain from a given plasmid and associates the two, then
+    marks both as "Processed". Intended to be used a convenience method for
+    when a plasmid was constructued and then immediately transformed for
+    amplification in the lab.
+
+    Parameters:
+        json:
+            background_strain <str>: The background strain the plasmid was transformed into
+            plasmid_ids <str>: ID of the plasmid that was transformed into the strain
+            global_id <str> (optional): ID to use for the new strain.
+                If not provided, will create one based on the plasmid ID
+            name <str> (optional): Name of the strain.
+                If not provided, will create one based on the plasmid name
+            friendly_name <str> (optional): Human-friendly name for the strain.
+                If not provided, will create one based on the plasmid name
+            description <str> (optional): Description for the strain.
+                If not provided, will create one based on the plasmid description
+            
+    Returns:
+        json:
+            success <bool>: True if the upload was successful, False
+            msg <str>: A message describing the success or failure
+            data <JSON>: name and id of the newly created strain
+
+    """
+
+    transformation_info = request.get_json()
+
+    StrainSchema(only=['background_strain','plasmid_ids']).validate(transformation_info)
+    strains_info, plasmid = infer_transformation_data(transformation_info)
+
+    strains = validate_and_extract_objects(StrainSchema, strains_info)
+    
+    plasmid_success = update_objects_in_db(Plasmid,
+                                           [plasmid.global_id],
+                                           [{'status':SubmissionStatus.processed}]
+                                          )
+    strain_success = save_objects_in_db(strains)
+    success = plasmid_success and strain_success
+
+    return jsonify({'success': success, 'msg': f'Successfully added strain and updated plasmid'}), 201

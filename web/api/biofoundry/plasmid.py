@@ -1,7 +1,9 @@
 from collections import namedtuple
 from web.api.biofoundry.genetic_part import GeneticPart
-from web.database.models import PlasmidModel, ApplicationModel
+from web.database.models import PlasmidModel, ApplicationModel, SubmissionStatus
 from web.extensions import db
+
+from .validators import ANTIBIOTICS
 
 def bioart_application():
     return ApplicationModel.query.filter(ApplicationModel.name=='bioart').one_or_none()
@@ -13,27 +15,11 @@ def _get_global_id(self):
            https://parts.igem.org/Help:Plasmids/Nomenclature
            Last number is an incrementer instead of version number
         """
-        resistance_codes = {
-            'ampicillin': 'A',
-            'chloramphenicol': 'C',
-        	'erythromycin': 'E',
-            'gentamycin': 'G',
-            'kanamycin': 'K',
-            'neomycin': 'N',
-            'nalidixic acid': 'Na',
-            'rifampicin': 'R',
-            'spectinomycin': 'S',
-            'streptomycin': 'St',
-            'tetracycline': 'T',
-            'trimethoprim': 'Tm',
-            'zeocin': 'Z'
-        }
-
         last_id = _Model.query.order_by(_Model.id.desc()).first().id or 0        
 
         prefix = 'pBAB_'
         ori_code = '1' #TODO: Match the ORI properly
-        resistance_code = resistance_codes[self.antibiotic_resistance]
+        resistance_code = ANTIBIOTICS[self.antibiotic_resistance]
         next_id = str(last_id + 1).zfill(4)
 
         return prefix + ori_code + resistance_code + next_id
@@ -65,13 +51,17 @@ class Plasmid():
 
         if 'friendly_name' not in kwargs: kwargs['friendly_name'] = kwargs['name']
         kwargs['application'] = bioart_application()
+        try:
+            kwargs['status'] = SubmissionStatus(kwargs('status'))
+        except: #assume plasmid is built unless told otherwise
+            kwargs['status'] = SubmissionStatus.processed
 
         model = _Model(**kwargs)
 
         with db.session.no_autoflush:
             model.global_id = _get_global_id(model)
 
-        return cls(model).save()
+        return cls(model)
 
     @classmethod
     def create_from_parts(cls, name: str, description: str, inserts: list, status='Processed', submitter=None):
