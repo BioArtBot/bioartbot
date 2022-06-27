@@ -3,11 +3,12 @@ import os
 from flask import Flask, render_template
 from flask_migrate import upgrade
 from sqlalchemy.exc import DBAPIError
-from web.extensions import db, migrate, mail, cache, jwt, argon2
+from web.extensions import db, migrate, mail, cache, cors, jwt, argon2
 from web.views import main
 from web.api.user.artpiece.endpoints import artpiece_blueprint
 from web.api.user.endpoints import user_blueprint
 from web.api.lab_objects.endpoints import lab_object_blueprint
+from web.api.biofoundry.endpoints import biofoundry_blueprint
 from web.api.user.exceptions import InvalidUsage
 
 def create_app():
@@ -31,6 +32,7 @@ def register_extensions(app):
     migrate.init_app(app, db)
     mail.init_app(app)
     cache.init_app(app)
+    cors.init_app(app)
     jwt.init_app(app)
     argon2.init_app(app)
 
@@ -40,6 +42,7 @@ def register_blueprints(app):
     app.register_blueprint(artpiece_blueprint)
     app.register_blueprint(user_blueprint)
     app.register_blueprint(lab_object_blueprint)
+    app.register_blueprint(biofoundry_blueprint)
 
 def register_errorhandlers(app):
     @app.errorhandler(InvalidUsage)

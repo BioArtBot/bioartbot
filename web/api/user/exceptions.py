@@ -6,9 +6,13 @@ def error_template(code, title):
 _NOT_FOUND = error_template('not_found', 'resource not found')
 _BAD_LOGIN = error_template('bad_credentials', 'bad username or password')
 _BAD_TOKEN = error_template('bad_token', 'no match for provided data token')
+_INVALID_PASSWORD = error_template('invalid_password', 'password must be longer than 8 characters')
 _USER_NOT_FOUND = error_template('user_not_found', 'requested user not found')
 _USER_EXISTS = error_template('user_exists', 'cannot create user that already exists')
 _FORBIDDEN = error_template('forbidden', 'user does not have access')
+_BAD_REFERENCE = error_template('bad_reference', 'Referenced item doesn\'t exist')
+_NOT_IMPLEMENTED = error_template('not_implemented', 'This endpoint has not been implemented')
+_CANNOT_CHANGE_OWN_ROLE = error_template('cannot_change_own_role', 'You cannot change your own role')
 
 class InvalidUsage(Exception):
     status_code = 400
@@ -56,3 +60,20 @@ class InvalidUsage(Exception):
             for title in err.messages[code]:
                 errors.append({'code': code, 'title': title})
         return cls(message)
+
+    @classmethod
+    def bad_reference(cls, message=None):
+        _BAD_REFERENCE['errors'][0]['title'] += ": " + str(message)
+        return cls(_BAD_REFERENCE, status_code=404)
+
+    @classmethod
+    def not_implemented(cls):
+        return cls(_NOT_IMPLEMENTED, status_code=501)
+    
+    @classmethod
+    def cannot_change_own_role(cls):
+        return cls(_CANNOT_CHANGE_OWN_ROLE, status_code=403)
+
+class InvalidPasswordException(InvalidUsage):
+    def __init__(self):
+        super().__init__(_INVALID_PASSWORD, status_code=422)

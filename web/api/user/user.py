@@ -52,6 +52,10 @@ class MetaUser():
     def default_role(cls):
         return cls.roles()[0]
 
+    @classmethod
+    def get_all(cls):
+        return cls._get_model().query.all()
+
     def delete(self):
         return self._model.delete(commit=False)
     
@@ -62,6 +66,7 @@ class MetaUser():
         self._model.password_hash = argon2.password_hasher.hash(password)
 
     def is_password_valid(self, password):
+        if not password: return False
         try:
             argon2.password_hasher.verify(self.password_hash, password)
         except argon2.exceptions.VerificationError:

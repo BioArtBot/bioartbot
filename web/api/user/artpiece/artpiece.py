@@ -78,11 +78,15 @@ class Artpiece():
         return None if model is None else cls(_Model.get_by_id(id))
 
     @classmethod
-    def get_printable(cls):
+    def get_printable(cls, unprinted_only=False, confirmed_only=True):
+        statuses= [SubmissionStatus.submitted]
+        if not unprinted_only:
+            statuses += [SubmissionStatus.processing, SubmissionStatus.processed]
+        query_filter = (ArtpieceModel.status.in_(statuses),)
+        if confirmed_only: query_filter += (ArtpieceModel.confirmed == True,)
+        print(query_filter)
         model = (
-            _Model.query.filter(
-            ArtpieceModel.status == SubmissionStatus.submitted
-            , ArtpieceModel.confirmed == True)
+            _Model.query.filter(*query_filter)
             .order_by(ArtpieceModel.submit_date.asc())
             .all())
         return model
@@ -120,6 +124,14 @@ class Artpiece():
 
     def is_confirmed(self):
         return self._model.confirmed
+
+    def update_status(self, status):
+        status_enum = SubmissionStatus[status]
+        return self._model.update(status=status_enum, commit=True)
+
+    def delete(self):
+        self._model.delete(commit=True)
+        return True
 
     @property
     def title(self):
