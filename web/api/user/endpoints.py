@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_current_user
 from flask import (Blueprint, request, current_app, jsonify, send_file)
 from flask_jwt_extended import (
         create_access_token, create_refresh_token
@@ -103,7 +103,8 @@ def create():
     Returns:
         json: A json object giving the superuser's assigned id, and a success boolean.
     """
-    data = validate_and_extract_user_data(request.json, new_user=True)
+    requesting_user = get_current_user()
+    data = validate_and_extract_user_data(request.json, requesting_user, new_user=True)
     email, password, role = data['email'], data['password'], data['role']
 
     id, success = create_superuser(email, password, role)
@@ -128,10 +129,11 @@ def update_role():
         json: A json object confirming the superuser's email,
               the old and new roles, and a success boolean.
     """
-    data = validate_and_extract_user_data(request.json, skipped_fields=('password',))
+    requesting_user = get_current_user()
+    data = validate_and_extract_user_data(request.json, requesting_user, skipped_fields=('password',))
     email, requested_role = data['email'], data['role']
 
-    email, old_role, new_role = update_superuser_role(email, requested_role)
+    email, old_role, new_role = update_superuser_role(email, requested_role, get_current_user())
     resp = jsonify({'user': email, 'old_role': old_role, 'new_role': new_role})
     return resp, 200
 
@@ -157,11 +159,12 @@ def reset_password():
     Returns:
         json: A json object confirming the superuser's email, and a success boolean.
     """
-    data = validate_and_extract_user_data(request.json, skipped_fields=('role',))
+    requesting_user = get_current_user()
+    data = validate_and_extract_user_data(request.json, requesting_user, skipped_fields=('role',))
     old_password = data.get('password') #Could be None, if admin is requesting
     email, requested_password = data['email'], data['new_password']
 
-    email, success = update_superuser_password(email, old_password, requested_password)
+    email, success = update_superuser_password(email, old_password, requested_password, get_current_user())
     warnings = []
     if not old_password: warnings.append(
         'WARNING: A future version of this endpoint will require a current password, even for Admins'

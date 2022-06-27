@@ -6,6 +6,7 @@ def error_template(code, title):
 _NOT_FOUND = error_template('not_found', 'resource not found')
 _BAD_LOGIN = error_template('bad_credentials', 'bad username or password')
 _BAD_TOKEN = error_template('bad_token', 'no match for provided data token')
+_INVALID_PASSWORD = error_template('invalid_password', 'password must be longer than 8 characters')
 _USER_NOT_FOUND = error_template('user_not_found', 'requested user not found')
 _USER_EXISTS = error_template('user_exists', 'cannot create user that already exists')
 _FORBIDDEN = error_template('forbidden', 'user does not have access')
@@ -72,3 +73,7 @@ class InvalidUsage(Exception):
     @classmethod
     def cannot_change_own_role(cls):
         return cls(_CANNOT_CHANGE_OWN_ROLE, status_code=403)
+
+class InvalidPasswordException(InvalidUsage):
+    def __init__(self):
+        super().__init__(_INVALID_PASSWORD, status_code=422)

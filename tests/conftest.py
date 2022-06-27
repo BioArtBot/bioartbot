@@ -1,13 +1,15 @@
 import pytest
 import os
+import datetime
 from flask import current_app
 from flask_migrate import upgrade, downgrade
+from argon2 import PasswordHasher
 from random import randint
 from web.app import create_app
 from web.extensions import db
 
 from web.api.user.artpiece.core import create_artpiece
-from web.database.models import ArtpieceModel
+from web.database.models import ArtpieceModel, SuperUserModel, SuperUserRole
 from web.api.lab_objects.lab_objects import LabObject
 
 ### Constants for use in tests ###
@@ -19,6 +21,8 @@ VALID_PASSWORD = 'ThisIsALongAndValidPassword'
 INITIAL_ROLE = 'Artist'
 INITIAL_SUPERUSER_ROLE = 'Printer'
 INITIAL_PASSWORD_HASH = None
+INITIAL_ADMIN_EMAIL = 'ADMIN'
+INITIAL_ADMIN_PASSWORD = 'TEMP'
 
 VALID_PLATE = dict()
 properties1 = [
@@ -78,6 +82,11 @@ def clear_database():
     meta = db.metadata
     for table in reversed(meta.sorted_tables): #More idiomatic way to keep default data in DB is preferable
         if table.name not in ['bacterial_colors','strains','plasmids', 'applications']: db.session.execute(table.delete())
+    
+    db.session.add(SuperUserModel(email=INITIAL_ADMIN_EMAIL, #Ensure there is always an admin that can "act" during tests
+                                    created_at=datetime.datetime(1,1,1),
+                                    role=SuperUserRole.admin,
+                                    password_hash=PasswordHasher().hash(INITIAL_ADMIN_PASSWORD)))
     db.session.commit()
 
 @pytest.fixture(scope='session')
