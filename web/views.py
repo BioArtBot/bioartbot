@@ -17,11 +17,11 @@ DEFAULT_CANVAS = {'x':26, 'y':26}
 def index():
     return render_template('main.html', canvas_size=DEFAULT_CANVAS, announcement=ANNOUNCEMENT, home_tag=' active', about_tag='')
 
-@main.route('/about',methods=('GET',))
+@main.route('/gallery',methods=('GET',))
 @cache.cached(timeout=60)
 def about():
     img_list = get_gallery_images()
-    return render_template('about.html', img_list=img_list, home_tag='', about_tag=' active')
+    return render_template('gallery.html', img_list=img_list, home_tag='', gallery_tag=' active')
 
 @main.route('/print', methods=('GET', ))
 def print():
