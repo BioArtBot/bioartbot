@@ -10,18 +10,11 @@
     </section>
     <hr class="section-break">
 
-    <!-- about text section -->
-    <section class='longform-text'>
-        {% include 'about_text.html' %}
-    </section>
-    {% include 'paypal_form.html' %}
-    <hr class="section-break">
-
     <!-- youtube section -->
     <section>
         <div class="w-100">
             <div>
-                <h2>Watch Us</h2>
+                <h2>BioArtBot Videos</h2>
                 <iframe
                     src="https://www.youtube.com/embed/playlist?list=PLIhn42HNYoMhWYj7aEIN8FOzgLqbZvj0j"
                     class="youtube-video"
@@ -32,4 +25,9 @@
             </div>
         </div>
     </section>
+
+    <hr class="section-break">
+
+    <em>Donate to help support the project</em>
+    {% include 'paypal_form.html' %}
 {% endblock %}

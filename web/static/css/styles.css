@@ -239,7 +239,7 @@ hr.section-break:before {
 #cclSlideshow {
 	min-height: 100px;
 	height: 85vh;
-	max-height: calc(0.562*100vw);
+	max-height: calc(0.562*65vw);
 	min-width: calc(1.779*100px);
 	width: calc(1.779*85vh);
 	max-width: 100%;
