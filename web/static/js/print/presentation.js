@@ -108,9 +108,20 @@ app.presentation = function(view, model) {
 		}
 
 		view.board.initialize_headers(col);
-	
+		
+		const status_order = {
+			'Submitted': 0,
+			'Processing': 1,
+			'Processed': 2,
+		}
+
+		printables = Object.entries(printables);
+		printables.sort((a, b) =>
+			status_order[a[1].status] - status_order[b[1].status]
+		);
+
 		for (var id_key in printables) {
-			job = printables[id_key];
+			job = printables[id_key][1];
 			view.board.add(job);
 		}
 	}

@@ -84,9 +84,9 @@ class Artpiece():
             statuses += [SubmissionStatus.processing, SubmissionStatus.processed]
         query_filter = (ArtpieceModel.status.in_(statuses),)
         if confirmed_only: query_filter += (ArtpieceModel.confirmed == True,)
-        print(query_filter)
         model = (
             _Model.query.filter(*query_filter)
+            .order_by(ArtpieceModel.status.asc())
             .order_by(ArtpieceModel.submit_date.asc())
             .all())
         return model
