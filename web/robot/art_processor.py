@@ -227,8 +227,7 @@ def make_procedure(artpiece_ids, SQLALCHEMY_DATABASE_URI = None, APP_DIR = None,
     with session_scope(Session) as session:
         output_msg = []
         
-        query_filter = (ArtpieceModel.status == SubmissionStatus.submitted
-                       ,ArtpieceModel.confirmed == True
+        query_filter = (ArtpieceModel.confirmed == True,
                        )
         if artpiece_ids: query_filter += (ArtpieceModel.id.in_(artpiece_ids),)
 
