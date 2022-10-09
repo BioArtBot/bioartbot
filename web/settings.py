@@ -24,7 +24,7 @@ class Config(object):
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET', UNSECURE_DEFAULT_JWT_SECRET_KEY)
     JWT_TOKEN_LOCATION = os.environ.get('JWT_TOKEN_LOCATION', 'cookies').split(', ')
     JWT_COOKIE_CSRF_PROTECT = True
-    JWT_COOKIE_SAMESITE = 'None'
+    JWT_COOKIE_SAMESITE = None
     JWT_COOKIE_SECURE = True
     JWT_ACCESS_TOKEN_EXPIRES = 60*60*2 #BUG: flask-jwt-extended does not handle expired tokens gracefully. Shorten this time once it does
 
