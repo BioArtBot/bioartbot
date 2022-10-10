@@ -49,7 +49,7 @@ class ProdConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(', ')
     JWT_COOKIE_DOMAIN = os.environ.get('JWT_COOKIE_DOMAIN', None)
-    JWT_COOKIE_SECURE = True
+    JWT_COOKIE_SECURE = os.environ.get('JWT_COOKIE_SECURE', True)
     #JWT_COOKIE_SAMESITE = "None" #Appears to not work with flask-jwt-extended v4.0.2.
     #Should upgrade, but this will also require major version change of flask, to 2.2.2
 
