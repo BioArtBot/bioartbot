@@ -24,8 +24,6 @@ class Config(object):
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET', UNSECURE_DEFAULT_JWT_SECRET_KEY)
     JWT_TOKEN_LOCATION = os.environ.get('JWT_TOKEN_LOCATION', 'cookies').split(', ')
     JWT_COOKIE_CSRF_PROTECT = True
-    JWT_COOKIE_SAMESITE = None
-    JWT_COOKIE_SECURE = True
     JWT_ACCESS_TOKEN_EXPIRES = 60*60*2 #BUG: flask-jwt-extended does not handle expired tokens gracefully. Shorten this time once it does
 
     """Mail settings."""
@@ -50,6 +48,10 @@ class ProdConfig(Config):
     ENV = 'production'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(', ')
+    JWT_COOKIE_DOMAIN = os.environ.get('JWT_COOKIE_DOMAIN', None)
+    JWT_COOKIE_SECURE = True
+    #JWT_COOKIE_SAMESITE = "None" #Appears to not work with flask-jwt-extended v4.0.2.
+    #Should upgrade, but this will also require major version change of flask, to 2.2.2
 
 class DevConfig(Config):
     """Development configuration."""
