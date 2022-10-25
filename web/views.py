@@ -15,13 +15,18 @@ DEFAULT_CANVAS = {'x':26, 'y':26}
 @main.route('/index', methods=('GET', ))
 @cache.cached(timeout=60)
 def index():
-    return render_template('main.html', canvas_size=DEFAULT_CANVAS, announcement=ANNOUNCEMENT, home_tag=' active', about_tag='')
+    return render_template('main.html', canvas_size=DEFAULT_CANVAS, art_style='DRAW', announcement=ANNOUNCEMENT, home_tag=' active', about_tag='')
 
 @main.route('/gallery',methods=('GET',))
 @cache.cached(timeout=60)
 def about():
     img_list = get_gallery_images()
     return render_template('gallery.html', img_list=img_list, home_tag='', gallery_tag=' active')
+
+@main.route('/upload_image', methods=('GET', ))
+@cache.cached(timeout=60)
+def upload_image():
+    return render_template('main.html', canvas_size=DEFAULT_CANVAS, art_style='UPLOAD', announcement=ANNOUNCEMENT, home_tag=' active', about_tag='')
 
 @main.route('/print', methods=('GET', ))
 def print():

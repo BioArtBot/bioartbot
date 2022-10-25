@@ -1,0 +1,45 @@
+<div class="d-flex justify-content-around mt-3">
+	<div class="overflow-auto">
+		<div id="submission-block" class="info-block p-3 text-center">
+			<div id="submission-error" class="w-100">
+				<span>
+					<i class="fas fa-times" style="font-size: 2rem; color: Tomato;"></i>
+				</span>
+				<p class="content"></p>
+			</div>
+			<form class="draw-submit">
+				<h4>Select image to upload</h4>
+				<br> <br>
+				<input type="file" id="image" name="art_image" class="mb-2 w-100">
+				<input type="text" id="title" class="submit-input mb-2 w-100" placeholder="title">
+				<input type="email" id="email" class="submit-input mb-2 w-100" placeholder="email">
+				<button type="submit" class="btn submit-button btn-sm">
+					<strong>Submit image</strong>
+				</button>
+			</form>
+		</div>
+		<div class="info-block p-3 mt-3 text-center">
+			<p><em>If you like the project, please consider donating to support
+				our originating lab, <a href="https://www.counterculturelabs.org">Counter Culture Labs</a>.</em></p>
+			{% include 'paypal_form.html' %}
+			<p><em>All donations go directly to CCL to help them build community programs.
+				<br>
+				CCL is a registered 501(c)(3) non-profit organization.
+			</em></p>
+			
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="submission-modal" tabindex="-1" role="dialog" 
+	aria-labelledby="submissionModal" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered" role="document">
+		<div class="modal-content" style="background-color:rgba(0,0,0,0); border-style: none;">
+			<div class="modal-body"></div>
+		</div>
+	</div>
+</div>
+
+<!--TODO drop all checks except for confirming there is a title and email. Might need to make an alternate version of main.html for this.
+	Next, upload to a different endpoint that runs the image-parsing code. Could probably drop all the javascript and do it with pure html
+-->

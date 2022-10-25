@@ -5,7 +5,11 @@
 {% block body %}
     <!-- drawing section -->
     <section>
+	{% if art_style == 'UPLOAD' %}
+	{% include 'upload_image.html' %}
+	{% else %}
 	{% include 'drawing.html' %}
+	{% endif %}
     </section>
 
 	<!-- Modal -->
