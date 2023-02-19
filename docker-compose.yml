@@ -27,7 +27,7 @@ services:
             - AWS_ACCESS_KEY_ID=TEMP
             - AWS_SECRET_ACCESS_KEY=TEMP
             - IMAGE_BUCKET=dataimages
-            - LOGGING_URI=/report_info
+            - LOGGING_URI=/report_info_long_random_string
         depends_on:
             - artbot-db
             - localstack

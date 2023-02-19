@@ -2,10 +2,10 @@
 
 import json, datetime
 from functools import wraps
-from flask import (render_template, Blueprint, current_app, Response, request, redirect)
-from web.extensions import cache, jwt
+from flask import (render_template, Blueprint, Response, request)
+from web.extensions import cache
 from .api.user.utilities import get_gallery_images
-from .settings import ANNOUNCEMENT
+from .settings import ANNOUNCEMENT, Config
 
 main = Blueprint('main', __name__)
 
@@ -38,7 +38,7 @@ def art_confirmation():
             'art_confirmation.html', confirmation_token=token, artpiece_id=artpiece_id
             )
 
-@main.route('/report_info', methods=('POST', ))
+@main.route(Config.LOGGING_URI, methods=('POST', ))
 def report_info():
     msg = request.get_data()
     try:

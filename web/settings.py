@@ -45,7 +45,7 @@ class Config(object):
     IMAGE_BUCKET = os.environ.get('IMAGE_BUCKET', None)
 
     """Logging settings."""
-    LOGGING_URI = os.environ.get('LOGGING_URI', None)
+    LOGGING_URI = os.environ.get('LOGGING_URI', '')
 
 
 class ProdConfig(Config):
