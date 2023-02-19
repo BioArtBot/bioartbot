@@ -38,8 +38,7 @@ def register_extensions(app):
     talisman.init_app(app,
                       content_security_policy=app.config['CSP_DIRECTIVES'],
                       content_security_policy_report_only=True,
-                      content_security_policy_report_uri=app.config['LOGGING_URI'],
-                      force_https=True
+                      content_security_policy_report_uri=app.config['LOGGING_URI']
                       )
 
 def register_blueprints(app):
