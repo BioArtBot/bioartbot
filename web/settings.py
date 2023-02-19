@@ -18,14 +18,15 @@ class Config(object):
     """CORS settings. Origins handled below."""
     CORS_SUPPORTS_CREDENTIALS = True
     CORS_RESOURCES = [r"/biofoundry/*", r"/user/*"]
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(', ')
 
     """JWT settings."""
     UNSECURE_DEFAULT_JWT_SECRET_KEY = 'invalid-jwt-secret-key'
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET', UNSECURE_DEFAULT_JWT_SECRET_KEY)
     JWT_TOKEN_LOCATION = os.environ.get('JWT_TOKEN_LOCATION', 'cookies').split(', ')
     JWT_COOKIE_CSRF_PROTECT = True
-    JWT_ACCESS_TOKEN_EXPIRES = 60*60*2 #BUG: flask-jwt-extended does not handle expired tokens gracefully. Shorten this time once it does
-
+    JWT_ACCESS_TOKEN_EXPIRES = 60*60*2 #BUG: flask-jwt-extended does not handle expired tokens gracefully. Shorten this time once it does  
+    
     """Mail settings."""
     MAIL_SERVER = os.environ.get('MAIL_SERVER', None)
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 25))
@@ -43,21 +44,50 @@ class Config(object):
     AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', None)
     IMAGE_BUCKET = os.environ.get('IMAGE_BUCKET', None)
 
+    """Logging settings."""
+    LOGGING_URI = os.environ.get('LOGGING_URI', '')
+
+
 class ProdConfig(Config):
     """Production configuration."""
     ENV = 'production'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(', ')
-    JWT_COOKIE_DOMAIN = os.environ.get('JWT_COOKIE_DOMAIN', None)
+    JWT_COOKIE_DOMAIN = os.environ.get('JWT_COOKIE_DOMAIN', '')
     JWT_COOKIE_SECURE = os.environ.get('JWT_COOKIE_SECURE', True)
     #JWT_COOKIE_SAMESITE = "None" #Appears to not work with flask-jwt-extended v4.0.2.
     #Should upgrade, but this will also require major version change of flask, to 2.2.2
+    CSP_DIRECTIVES = { #Content Security Policy
+        'default-src': "'self'",
+        'script-src': "'self' 'unsafe-inline' *.fontawesome.com *.cloudflare.com *.jsdelivr.net *.bootstrapcdn.com *" + JWT_COOKIE_DOMAIN,
+        'style-src': "'self' 'unsafe-inline' *.bootstrapcdn.com *" + JWT_COOKIE_DOMAIN,
+        'img-src': "'self' * *.amazonaws.com *.paypal.com *.paypalobjects.com *" + JWT_COOKIE_DOMAIN,
+        'font-src': "'self' data: *.fontawesome.com",
+        'connect-src': "'self' *",
+        'base-uri': "'self'",
+        'form-action': "'self'",
+        'frame-ancestors': "'self'",
+        'worker-src': "'self'",
+        'manifest-src': "'self'"
+    }
+
 
 class DevConfig(Config):
     """Development configuration."""
     ENV = 'development'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(', ')
+    CSP_DIRECTIVES = { #Content Security Policy
+        'default-src': "'self'",
+        'script-src': "'self' 'unsafe-inline' localhost *.fontawesome.com *.cloudflare.com *.jsdelivr.net *.bootstrapcdn.com",
+        'style-src': "'self' 'unsafe-inline' localhost *.bootstrapcdn.com",
+        'img-src': "'self' * localhost *.paypal.com *.paypalobjects.com",
+        'font-src': "'self' data: *.fontawesome.com",
+        'connect-src': "'self' *",
+        'base-uri': "'self'",
+        'form-action': "'self'",
+        'frame-ancestors': "'self'",
+        'worker-src': "'self'",
+        'manifest-src': "'self'"
+    }
 
 class TestingConfig(Config):
     ENV = 'testing'
