@@ -44,6 +44,6 @@ def report_info():
     try:
         msg = json.loads(msg)
     except:
-        pass
+        return Response(status = 400)
     print(f'{request.remote_addr} - - [{datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S")}] REPORT {str(msg)}')
     return Response(status = 200)
