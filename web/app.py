@@ -35,7 +35,12 @@ def register_extensions(app):
     cors.init_app(app)
     jwt.init_app(app)
     argon2.init_app(app)
-    talisman.init_app(app)
+    talisman.init_app(app,
+                      content_security_policy=app.config['CSP_DIRECTIVES'],
+                      content_security_policy_report_only=True,
+                      content_security_policy_report_uri=app.config['LOGGING_URI'],
+                      force_https=True
+                      )
 
 def register_blueprints(app):
     """Register Flask blueprints."""

@@ -1,7 +1,8 @@
 #views.py - Maps URLs to backend functions, then returns the results to the appropriate view
 
+import json, datetime
 from functools import wraps
-from flask import (render_template, Blueprint, current_app, request)
+from flask import (render_template, Blueprint, current_app, Response, request, redirect)
 from web.extensions import cache, jwt
 from .api.user.utilities import get_gallery_images
 from .settings import ANNOUNCEMENT
@@ -24,7 +25,7 @@ def about():
     return render_template('gallery.html', img_list=img_list, home_tag='', gallery_tag=' active')
 
 @main.route('/print', methods=('GET', ))
-def print():
+def print_view():
     return render_template('print.html')
 
 @main.route('/art_confirmation', methods=('GET', ))
@@ -36,3 +37,13 @@ def art_confirmation():
     return render_template(
             'art_confirmation.html', confirmation_token=token, artpiece_id=artpiece_id
             )
+
+@main.route('/report_info', methods=('POST', ))
+def report_info():
+    msg = request.get_data()
+    try:
+        msg = json.loads(msg)
+    except:
+        pass
+    print(f'{request.remote_addr} - - [{datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S")}] REPORT {str(msg)}')
+    return Response(status = 200)

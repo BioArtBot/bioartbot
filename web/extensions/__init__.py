@@ -40,14 +40,6 @@ class CRUDMixin(Model):
         db.session.flush()
         return commit and db.session.commit()
 
-content_security_policy = {
-    'default-src': [
-        '\'self\''
-    ]
-}
-if Config.JWT_COOKIE_DOMAIN:
-    content_security_policy['default-src'].append('*' + Config.JWT_COOKIE_DOMAIN)
-
 db = SQLAlchemy(model_class=CRUDMixin)
 migrate = Migrate()
 mail = Mail()
@@ -55,6 +47,6 @@ cache = Cache()
 jwt = JWTManager()
 argon2 = Argon2()
 cors = CORS()
-talisman = Talisman(content_security_policy=content_security_policy)
+talisman = Talisman()
 
 jwt.user_lookup_loader(user_lookup_callback)
