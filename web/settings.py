@@ -58,9 +58,9 @@ class ProdConfig(Config):
     #Should upgrade, but this will also require major version change of flask, to 2.2.2
     CSP_DIRECTIVES = { #Content Security Policy
         'default-src': "'self'",
-        'script-src': "'self' 'unsafe-inline' *.fontawesome.com *.cloudflare.com *.jsdelivr.net *.bootstrapcdn.com " + JWT_COOKIE_DOMAIN,
-        'style-src': "'self' 'unsafe-inline' *.bootstrapcdn.com " + JWT_COOKIE_DOMAIN,
-        'img-src': "'self' * *.amazonaws.com *.paypal.com *.paypalobjects.com " + JWT_COOKIE_DOMAIN,
+        'script-src': "'self' 'unsafe-inline' *.fontawesome.com *.cloudflare.com *.jsdelivr.net *.bootstrapcdn.com *" + JWT_COOKIE_DOMAIN,
+        'style-src': "'self' 'unsafe-inline' *.bootstrapcdn.com *" + JWT_COOKIE_DOMAIN,
+        'img-src': "'self' * *.amazonaws.com *.paypal.com *.paypalobjects.com *" + JWT_COOKIE_DOMAIN,
         'font-src': "'self' data: *.fontawesome.com",
         'connect-src': "'self' *",
         'base-uri': "'self'",
