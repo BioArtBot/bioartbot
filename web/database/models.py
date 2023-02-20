@@ -16,6 +16,11 @@ class SubmissionStatus(Enum):
     def __str__(self):
         return self.value
 
+job_artpiece_association = Table('job_artpiece_association', Model.metadata,
+    Column('job_id', db.ForeignKey('jobs.id'), primary_key=True),
+    Column('artpiece_id', db.ForeignKey('artpieces.id'), primary_key=True)
+)
+
 #Stores all submitted art and allows it to be referenced later by the robot interface
 class ArtpieceModel(SurrogatePK, Model):
     __tablename__ = 'artpieces'
@@ -66,8 +71,27 @@ class SuperUserModel(SurrogatePK, Model):
             , nullable=False, name='role', default='Printer')
     password_hash = Column(db.String(128), nullable=True)
 
+    jobs = relationship('JobModel', backref='requestor')
+
     def __repr__(self):
         return '<%r: %r>' % (self.id, self.email)
+
+
+class JobModel(SurrogatePK, Model):
+    __tablename__ = 'jobs'
+
+    request_date = Column(db.DateTime(), nullable=False)
+    file_name = Column(db.String(50), nullable=False)
+    options = Column(db.JSON())
+    super_user_id = Column(db.Integer, db.ForeignKey('super_users.id'), nullable=False)
+
+    artpieces = relationship('ArtpieceModel', 
+                            secondary=job_artpiece_association,
+                            backref="jobs")
+
+    def __repr__(self):
+        return '<%r: %r>' % (self.id, self.super_user)
+
 
 class ApplicationModel(SurrogatePK, Model):
     __tablename__ = 'applications'

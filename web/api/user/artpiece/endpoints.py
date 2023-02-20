@@ -1,6 +1,6 @@
 import os
 from flask import (Blueprint, request, current_app, jsonify, send_file, render_template_string)
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_current_user
 from .core import (validate_and_extract_artpiece_data, create_artpiece,
         has_reached_monthly_submission_limit, guarantee_monthly_submission_limit_not_reached,
         validate_and_extract_status_update, validate_and_extract_color_data)
@@ -153,8 +153,9 @@ def receive_print_request():
                     ,'pipette': 'p20_single_gen2'
                     ,'canvas': labware['canvas']
                     }
-
-    msg, procedure_loc = make_procedure(artpiece_ids, option_args=option_args)
+    
+    requestor = get_current_user()
+    msg, procedure_loc = make_procedure(artpiece_ids, requestor=requestor, option_args=option_args)
 
     if procedure_loc:
         unique_id = procedure_loc[1].split('_')[-1]
