@@ -91,7 +91,8 @@ def test_generate_procedure(random_test_art_ids, num_artpieces, canvas_object_in
     artpiece_ids = artpiece_ids[:num_artpieces]
     print(random_test_art_ids[0], artpiece_ids)
     status, procedure_path = make_procedure(artpiece_ids,
-                                            test_database.engine.url,
+                                            requestor = None,
+                                            SQLALCHEMY_DATABASE_URI = test_database.engine.url,
                                             option_args={'notebook':False
                                                         ,'palette':'corning_96_wellplate_360ul_flat'
                                                         ,'pipette':'p300_single'

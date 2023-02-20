@@ -8,7 +8,7 @@ import math
 from contextlib import contextmanager
 
 from web.api.lab_objects.lab_objects import LabObject, LabObjectPropertyCollection #Uncomfortable with this dependency
-from web.database.models import (ArtpieceModel, SubmissionStatus, BacterialColorModel, LabObjectsModel)
+from web.database.models import (ArtpieceModel, JobModel, SuperUserModel, SuperUserRole, SubmissionStatus, BacterialColorModel, LabObjectsModel)
 
 def read_args(args):
     if not args: args = {'notebook':False
@@ -106,8 +106,6 @@ def min_dist_point(start, remaininglist, cache = None, required_gap = 0):
             if not point_close_to_cache(v):
                 min_dist = dist
                 min_point = v
-
-    print(f'final point taken: {min_point}')
 
     if min_point is None: #If no point that is far enough away is found, just use the closest point
         print('no point found, using closest')
@@ -219,7 +217,7 @@ def add_color_map(template_string, colors):
     procedure = template_string.replace('%%COLORS GO HERE%%', str(color_map))
     return procedure
 
-def make_procedure(artpiece_ids, SQLALCHEMY_DATABASE_URI = None, APP_DIR = None, num_pieces = 9, option_args = None): 
+def make_procedure(artpiece_ids, requestor = None, SQLALCHEMY_DATABASE_URI = None, APP_DIR = None, num_pieces = 9, option_args = None): 
     NOTEBOOK, LABWARE = read_args(option_args)
     APP_DIR, SQLALCHEMY_DATABASE_URI = initiate_environment(SQLALCHEMY_DATABASE_URI, APP_DIR)
     Session = initiate_sql(SQLALCHEMY_DATABASE_URI)
@@ -240,41 +238,58 @@ def make_procedure(artpiece_ids, SQLALCHEMY_DATABASE_URI = None, APP_DIR = None,
         if not artpieces:
             output_msg.append('No new art found. All done.')
             return output_msg, None
+
+        output_msg.append(f'Loaded {len(artpieces)} pieces of art')
+        for artpiece in artpieces:
+            output_msg.append(f"{artpiece.id}: {artpiece.title}, {artpiece.submit_date}")
+
+        # Get all colors
+        colors = session.query(BacterialColorModel).all()
+
+        # Get canvas plate dimensions
+        try:
+            canvas = LabObject.load_from_name(LABWARE['canvas'])
+        except: #kludgy fix to handle when CLI is used instead of web interface
+            canvas_model = session.query(LabObjectsModel).filter(LabObjectsModel.name==LABWARE['canvas']).one_or_none()
+            property_model = canvas_model.properties.all()
+            canvas = LabObject(canvas_model.name, canvas_model.obj_class, LabObjectPropertyCollection._from_model(property_model))
+
+        #Get Python art procedure template
+        file_extension = 'ipynb' if NOTEBOOK == True else 'py' #Use Jupyter notbook template or .py template
+        with open(os.path.join(APP_DIR,f'ART_TEMPLATE.{file_extension}')) as template_file:
+            template_string = template_file.read()
+
+        procedure = add_labware(template_string, LABWARE)
+        procedure, canvas_locations = add_canvas_locations(procedure, artpieces)
+        procedure = add_pixel_locations(procedure, artpieces, canvas)
+        procedure = add_color_map(procedure, colors)
+
+        now = datetime.now().strftime("%Y%m%d-%H%M%S")
+        unique_file_name = f'ARTISTIC_PROCEDURE_{now}.{file_extension}'
+        with open(os.path.join(APP_DIR,'procedures',unique_file_name),'w') as output_file:
+            output_file.write(procedure)
+
+        for artpiece in artpieces:
+            artpiece.status = SubmissionStatus.processed
+
+        #Job creation should probably be the responsibility of a different function
+        #This is too messy
+        if requestor is None:
+            requestor = session.query(SuperUserModel).filter(SuperUserModel.email=='null').one_or_none()
+            if requestor is None:
+                requestor = SuperUserModel(email='null', created_at=datetime.now())
         else:
-            output_msg.append(f'Loaded {len(artpieces)} pieces of art')
-            for artpiece in artpieces:
-                output_msg.append(f"{artpiece.id}: {artpiece.title}, {artpiece.submit_date}")
+            requestor = requestor._model
+        job = JobModel(request_date=datetime.now(),
+                        file_name=unique_file_name,
+                        requestor=session.merge(requestor),
+                        options = LABWARE,
+                        artpieces = artpieces
+                        )
+        session.add(job)
 
-            # Get all colors
-            colors = session.query(BacterialColorModel).all()
-
-            # Get canvas plate dimensions
-            try:
-                canvas = LabObject.load_from_name(LABWARE['canvas'])
-            except: #kludgy fix to handle when CLI is used instead of web interface
-                canvas_model = session.query(LabObjectsModel).filter(LabObjectsModel.name==LABWARE['canvas']).one_or_none()
-                property_model = canvas_model.properties.all()
-                canvas = LabObject(canvas_model.name, canvas_model.obj_class, LabObjectPropertyCollection._from_model(property_model))
-
-            #Get Python art procedure template
-            file_extension = 'ipynb' if NOTEBOOK == True else 'py' #Use Jupyter notbook template or .py template
-            with open(os.path.join(APP_DIR,f'ART_TEMPLATE.{file_extension}')) as template_file:
-                template_string = template_file.read()
-
-            procedure = add_labware(template_string, LABWARE)
-            procedure, canvas_locations = add_canvas_locations(procedure, artpieces)
-            procedure = add_pixel_locations(procedure, artpieces, canvas)
-            procedure = add_color_map(procedure, colors)
-
-            now = datetime.now().strftime("%Y%m%d-%H%M%S")
-            unique_file_name = f'ARTISTIC_PROCEDURE_{now}.{file_extension}'
-            with open(os.path.join(APP_DIR,'procedures',unique_file_name),'w') as output_file:
-                output_file.write(procedure)
-
-            for artpiece in artpieces:
-                artpiece.status = SubmissionStatus.processed
-
-            output_msg.append('Successfully generated artistic procedure')
-            output_msg.append('The following slots will be used:')
-            output_msg.append('\n'.join([f'Slot {str(canvas_locations[key])}: "{key}"' for key in canvas_locations]))
+    output_msg.append('Successfully generated artistic procedure')
+    output_msg.append('The following slots will be used:')
+    output_msg.append('\n'.join([f'Slot {str(canvas_locations[key])}: "{key}"' for key in canvas_locations]))
+    
     return output_msg, [os.path.join(APP_DIR,'procedures'),unique_file_name]
