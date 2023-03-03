@@ -91,7 +91,7 @@ If the pipette tip misses your agar, it's easiest to troubleshoot using the [Jup
 - Follow instructions in OT app upon upload of procedure
 
 ## Permissions
-Copyright (C) <2023>  <Tim Dobbs>
+Copyright (C) 2023, Tim Dobbs
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
