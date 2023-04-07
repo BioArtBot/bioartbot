@@ -38,7 +38,7 @@ def distribute_to_agar(pipette, vol, source, destination, disposal_vol):
                 asp_vol = remaining_vol + disposal_vol - pipette.current_volume
 
             pipette.aspirate(asp_vol, source)
-            if vol < 0.3: pipette.touch_tip(source) #avoid blotches from liquid stuck to the outside of the tip
+            pipette.touch_tip(source)
 
         pipette.move_to(well)
         pipette.dispense(vol)
