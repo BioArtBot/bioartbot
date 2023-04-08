@@ -12,6 +12,7 @@ class SubmissionStatus(Enum):
     submitted = 'Submitted'
     processing = 'Processing'
     processed = 'Processed'
+    finalized = 'Finalized'
 
     def __str__(self):
         return self.value
@@ -71,6 +72,8 @@ class SuperUserModel(SurrogatePK, Model):
             , nullable=False, name='role', default='Printer')
     password_hash = Column(db.String(128), nullable=True)
 
+    home_base_id = Column(db.Integer, db.ForeignKey('locations.id'))
+    home_base = relationship('LocationModel', backref="local_users")
     jobs = relationship('JobModel', backref='requestor')
 
     def __repr__(self):
@@ -141,7 +144,7 @@ class PlasmidModel(SurrogatePK, Model):
     """
     __tablename__ = 'plasmids'
 
-    global_id = Column(db.String(30), unique=True, nullable=False)
+    global_id = Column(db.String(40), unique=True, nullable=False)
     name = Column(db.String(50), unique=True, nullable=False)
     friendly_name = Column(db.String(50), nullable=False)
     description = Column(db.String(500), nullable=False)
@@ -158,6 +161,9 @@ class PlasmidModel(SurrogatePK, Model):
                             secondary=plasmid_part_association,
                             backref="in_plasmids",
                             lazy="dynamic")
+    locations = relationship('LocationModel', 
+                            secondary='plasmid_location_association',
+                            backref="plasmids_available")
 
     def __repr__(self):
         return '<%r: %r>' % (self.global_id, self.friendly_name)
@@ -172,7 +178,7 @@ class GeneticPartsModel(SurrogatePK, Model):
     """
     __tablename__ = 'genetic_parts'
 
-    global_id = Column(db.String(30), unique=True, nullable=False)
+    global_id = Column(db.String(40), unique=True, nullable=False)
     name = Column(db.String(50), unique=True, nullable=False)
     friendly_name = Column(db.String(50), nullable=False)
     description = Column(db.String(500), nullable=False)
@@ -195,7 +201,7 @@ class StrainModel(SurrogatePK, Model):
     """
     __tablename__ = 'strains'
 
-    global_id = Column(db.String(30), unique=True, nullable=False)
+    global_id = Column(db.String(40), unique=True, nullable=False)
     name = Column(db.String(50), unique=True, nullable=False)
     friendly_name = Column(db.String(50), nullable=False)
     description = Column(db.String(500), nullable=False)
@@ -208,22 +214,46 @@ class StrainModel(SurrogatePK, Model):
     plasmids = relationship('PlasmidModel', 
                             secondary=strain_plasmid_association,
                             backref="in_strains")
+    locations = relationship('LocationModel', 
+                            secondary='strain_location_association',
+                            backref="strains_available")
 
     def __repr__(self):
         return '<%r: %r>' % (self.global_id, self.friendly_name)
 
+class LocationModel(SurrogatePK, Model):
+    """
+    A location is a physical place where strains or plasmids are stored.
+    BioArtBot doesn't differentiate between, e.g. two different shelves
+    in a lab. But two different labs a short drive from each other may
+    be separate Locations. A location represents an area that can be 
+    reasonably accessed by on person without making special arrangements.
+    In practice, BioArtBot uses this to decide if resources are available
+    to a person working in a certain location and filter jobs based on
+    that information.
+    """
+    __tablename__ = 'locations'
 
-class EmailFailureState(Enum):
-    submission_confirmation = 's_confirmation'
-    bioart_completion = 'bioart_completion'
+    name = Column(db.String(100), unique=True, nullable=False)
+    description = Column(db.Text(), nullable=False)
 
-class EmailFailureModel(SurrogatePK, Model):
-    __tablename__ = 'emailfailures'
+    def __repr__(self):
+        return '<%r: %r>' % (self.id, self.name)
+    
+strain_location_association = Table('strain_location_association', Model.metadata,
+    Column('strain_id', db.ForeignKey('strains.id'), primary_key=True),
+    Column('location_id', db.ForeignKey('locations.id'), primary_key=True)
+)
 
-    artpiece_id = Column(db.Integer, db.ForeignKey('artpieces.id'), nullable=False)
-    state = Column(db.Enum(EmailFailureState, values_callable=lambda x: [e.value for e in x])
-            , nullable=False, name='failure_state')
-    error_msg = Column(db.String(150), nullable=False)
+plasmid_location_association = Table('plasmid_location_association', Model.metadata,
+    Column('plasmid_id', db.ForeignKey('plasmids.id'), primary_key=True),
+    Column('location_id', db.ForeignKey('locations.id'), primary_key=True)
+)
+
+lab_object_location_association = Table('lab_object_location_association', Model.metadata,
+    Column('lab_object_id', db.ForeignKey('lab_objects.id'), primary_key=True),
+    Column('location_id', db.ForeignKey('locations.id'), primary_key=True)
+)
 
 class LabObjectsModel(SurrogatePK, Model):
     __tablename__ = 'lab_objects'
@@ -231,6 +261,9 @@ class LabObjectsModel(SurrogatePK, Model):
     name = Column(db.String(50), nullable=False, unique=True, index=True)
     obj_class = Column(db.String(50), nullable=False)
     properties = relationship('LabObjectPropertyModel', backref='object', lazy='dynamic')
+    locations = relationship('LocationModel', 
+                            secondary='lab_object_location_association',
+                            backref="lab_objects_available")
 
     def __repr__(self):
         return '<%r: %r>' % (self.obj_class, self.name)
@@ -248,3 +281,15 @@ class LabObjectPropertyModel(SurrogatePK, Model):
     def __repr__(self):
         return '<%r: %r>' % (self.obj_property,
                             self.property_value_num or self.property_value_str)
+    
+class EmailFailureState(Enum):
+    submission_confirmation = 's_confirmation'
+    bioart_completion = 'bioart_completion'
+
+class EmailFailureModel(SurrogatePK, Model):
+    __tablename__ = 'emailfailures'
+
+    artpiece_id = Column(db.Integer, db.ForeignKey('artpieces.id'), nullable=False)
+    state = Column(db.Enum(EmailFailureState, values_callable=lambda x: [e.value for e in x])
+            , nullable=False, name='failure_state')
+    error_msg = Column(db.String(150), nullable=False)
