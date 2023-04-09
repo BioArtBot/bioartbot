@@ -54,9 +54,9 @@ services:
             - AWS_SECRET_ACCESS_KEY=TEMP
             - SERVICES=s3
             - DEBUG=1
-            - DATA_DIR=/tmp/localstack/data
+            - DATA_DIR=/var/lib/localstack/data
         volumes:
-            - "./.localstack:/tmp/localstack"
+            - "./.localstack:/var/lib/localstack"
             - "./dev_deploy:/docker-entrypoint-initaws.d" #Runs startup scripts
 
     maildev:
