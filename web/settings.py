@@ -17,7 +17,7 @@ class Config(object):
 
     """CORS settings. Origins handled below."""
     CORS_SUPPORTS_CREDENTIALS = True
-    CORS_RESOURCES = [r"/biofoundry/*", r"/user/*"]
+    CORS_RESOURCES = [r"/biofoundry/*", r"/user/*", r"/locations/*"]
     CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '').split(', ')
 
     """JWT settings."""

@@ -9,12 +9,17 @@ class Location():
 
     @classmethod
     def create(cls, name, description=None):
-        return cls(_Model(name=name, description=description))
+        return cls(_Model(name=name, description=description).save(commit=True))
     
     @classmethod
     def get_by_id(cls, id):
         _Model = cls._Model()
         model = _Model.get_by_id(id)
+        return cls(model) if model else None
+    
+    @classmethod
+    def get_by_name(cls, name):
+        model = _Model.query.filter(_Model.name==name).one_or_none()
         return cls(model) if model else None
     
     @classmethod
