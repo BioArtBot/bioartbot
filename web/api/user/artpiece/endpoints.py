@@ -150,7 +150,7 @@ def receive_print_request():
 
     option_args = {'notebook':False
                     ,'palette': 'cryo_35_tuberack_2000ul'
-                    ,'pipette': 'p20_single_gen2'
+                    ,'pipette': labware['pipette']
                     ,'canvas': labware['canvas']
                     }
     
