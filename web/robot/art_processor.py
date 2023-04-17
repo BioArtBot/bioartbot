@@ -223,6 +223,7 @@ def make_procedure(artpiece_ids, requestor = None, SQLALCHEMY_DATABASE_URI = Non
     Session = initiate_sql(SQLALCHEMY_DATABASE_URI)
 
     with session_scope(Session) as session:
+
         output_msg = []
         
         query_filter = (ArtpieceModel.confirmed == True,
@@ -253,11 +254,15 @@ def make_procedure(artpiece_ids, requestor = None, SQLALCHEMY_DATABASE_URI = Non
             canvas_model = session.query(LabObjectsModel).filter(LabObjectsModel.name==LABWARE['canvas']).one_or_none()
             property_model = canvas_model.properties.all()
             canvas = LabObject(canvas_model.name, canvas_model.obj_class, LabObjectPropertyCollection._from_model(property_model))
-
-        #Get Python art procedure template
-        file_extension = 'ipynb' if NOTEBOOK == True else 'py' #Use Jupyter notbook template or .py template
-        with open(os.path.join(APP_DIR,f'ART_TEMPLATE.{file_extension}')) as template_file:
-            template_string = template_file.read()
+        if LABWARE["pipette"] == "p10_multi":
+            with open(os.path.join(APP_DIR,f'ART_TEMPLATE_8_TO_1.py')) as template_file:
+                template_string = template_file.read()
+        else:
+            #Get Python art procedure template
+            file_extension = 'ipynb' if NOTEBOOK == True else 'py' #Use Jupyter notbook template or .py template
+            with open(os.path.join(APP_DIR,f'ART_TEMPLATE.{file_extension}')) as template_file:
+                template_string = template_file.read()
+        
 
         procedure = add_labware(template_string, LABWARE)
         procedure, canvas_locations = add_canvas_locations(procedure, artpieces)
