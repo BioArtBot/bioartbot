@@ -186,4 +186,14 @@ class ProcedureLineInjector8To1Pipette (ProcedureLineInjector):
     def canvas_slot_generator(self):
         yield '5'
 
+    def add_all_lines(self, template_string, LABWARE, artpieces, canvas, colors):
+        procedure, canvas_locations = super().add_all_lines(template_string=template_string, LABWARE=LABWARE, artpieces=artpieces, canvas=canvas, colors=colors)
+        procedure = self.add_protocol_name(procedure, artpieces)
+        return procedure, canvas_locations
+
+    def add_protocol_name(self, template_string, artpieces):
+        name = artpieces[0].slug
+    
+        procedure = template_string.replace('%%PROTOCOL NAME GOES HERE %%', name)
+        return procedure
     

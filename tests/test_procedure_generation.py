@@ -248,8 +248,8 @@ def test_generate_procedure_8_to_1(random_test_art_ids, num_artpieces, canvas_ob
     assert next(iter(just_canvas_dict.values())) == '5'
 
     # Checks that the procol name has been modified
-    protocol_name_prefix_str = 'protocolName'
-    protocol_name_line = get_added_line_with_substring(protocol_name_prefix_str)
+    protocol_name_prefix_str = "'protocolName': '"
+    get_added_line_with_substring(protocol_name_prefix_str)
 
 
 
