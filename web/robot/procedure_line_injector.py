@@ -172,6 +172,14 @@ class ProcedureLineInjector:
         procedure = template_string.replace('%%COLORS GO HERE%%', str(color_map))
         return procedure
     
+    def add_all_lines(self, template_string, LABWARE, artpieces, canvas, colors):
+        procedure = self.add_labware(template_string, LABWARE)
+        procedure, canvas_locations = self.add_canvas_locations(procedure, artpieces)
+        procedure = self.add_pixel_locations(procedure, artpieces, canvas)
+        procedure = self.add_color_map(procedure, colors)
+
+        return procedure, canvas_locations
+    
 class ProcedureLineInjector8To1Pipette (ProcedureLineInjector):
     
     # 8 to 1 pipettes only support drawing on the 5th slot.

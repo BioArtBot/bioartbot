@@ -99,12 +99,8 @@ def make_procedure(artpiece_ids, requestor = None, SQLALCHEMY_DATABASE_URI = Non
             file_extension = 'ipynb' if NOTEBOOK == True else 'py' #Use Jupyter notbook template or .py template
             with open(os.path.join(APP_DIR,f'ART_TEMPLATE.{file_extension}')) as template_file:
                 template_string = template_file.read()
-        
 
-        procedure = procedure_line_injector.add_labware(template_string, LABWARE)
-        procedure, canvas_locations = procedure_line_injector.add_canvas_locations(procedure, artpieces)
-        procedure = procedure_line_injector.add_pixel_locations(procedure, artpieces, canvas)
-        procedure = procedure_line_injector.add_color_map(procedure, colors)
+        procedure, canvas_locations = procedure_line_injector.add_all_lines(template_string, LABWARE, artpieces, canvas, colors)
 
         now = datetime.now().strftime("%Y%m%d-%H%M%S")
         unique_file_name = f'ARTISTIC_PROCEDURE_{now}.{file_extension}'
