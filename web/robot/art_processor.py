@@ -94,6 +94,9 @@ def make_procedure(artpiece_ids, requestor = None, SQLALCHEMY_DATABASE_URI = Non
             
             file_extension = "py"
             procedure_line_injector = ProcedureLineInjector8To1Pipette()
+            if len(artpieces) != 1:
+                output_msg.append("ERROR: 8 to 1 pipette cannot accommodate more than 1 artpiece.")
+                return output_msg, None, 
         else:
             #Get Python art procedure template
             file_extension = 'ipynb' if NOTEBOOK == True else 'py' #Use Jupyter notbook template or .py template

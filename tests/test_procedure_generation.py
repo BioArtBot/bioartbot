@@ -251,7 +251,26 @@ def test_generate_procedure_8_to_1(random_test_art_ids, num_artpieces, canvas_ob
     protocol_name_prefix_str = "'protocolName': '"
     get_added_line_with_substring(protocol_name_prefix_str)
 
+@pytest.mark.usefixtures('test_app', 'clear_database')
+@pytest.mark.parametrize('num_artpieces', [2,3,4])
+def test_8_to_1_multiple_art_pieces(random_test_art_ids, num_artpieces, canvas_object_in_db, test_database):
+    """Tests that a 8_to_1 pipette procedure is made  
+    """
+    artpiece_ids, art_params = random_test_art_ids
+    artpiece_ids = artpiece_ids[:num_artpieces]
+    print(random_test_art_ids[0], artpiece_ids)
+    status, procedure_path = make_procedure(artpiece_ids,
+                                            requestor = None,
+                                            SQLALCHEMY_DATABASE_URI = test_database.engine.url,
+                                            option_args={'notebook':False
+                                                        ,'palette':'corning_96_wellplate_360ul_flat'
+                                                        ,'pipette':'p10_multi'
+                                                        ,'canvas': canvas_object_in_db.name
+                                                        }
+    )
 
+    assert procedure_path is None
+    assert status[-1] == "ERROR: 8 to 1 pipette cannot accommodate more than 1 artpiece."
 
 
 
