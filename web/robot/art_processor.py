@@ -9,7 +9,7 @@ from contextlib import contextmanager
 
 from web.api.lab_objects.lab_objects import LabObject, LabObjectPropertyCollection #Uncomfortable with this dependency
 from web.database.models import (ArtpieceModel, JobModel, SuperUserModel, SuperUserRole, SubmissionStatus, BacterialColorModel, LabObjectsModel)
-from web.robot.procedure_line_injector import ProcedureLineInjector
+from web.robot.procedure_line_injector import ProcedureLineInjector, ProcedureLineInjector8To1Pipette
 
 def read_args(args):
     if not args: args = {'notebook':False
@@ -93,6 +93,7 @@ def make_procedure(artpiece_ids, requestor = None, SQLALCHEMY_DATABASE_URI = Non
                 template_string = template_file.read()
             
             file_extension = "py"
+            procedure_line_injector = ProcedureLineInjector8To1Pipette()
         else:
             #Get Python art procedure template
             file_extension = 'ipynb' if NOTEBOOK == True else 'py' #Use Jupyter notbook template or .py template

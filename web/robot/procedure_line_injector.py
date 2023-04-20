@@ -171,3 +171,11 @@ class ProcedureLineInjector:
         color_map = {str(color.id): color.name for color in colors}
         procedure = template_string.replace('%%COLORS GO HERE%%', str(color_map))
         return procedure
+    
+class ProcedureLineInjector8To1Pipette (ProcedureLineInjector):
+    
+    # 8 to 1 pipettes only support drawing on the 5th slot.
+    def canvas_slot_generator(self):
+        yield '5'
+
+    
