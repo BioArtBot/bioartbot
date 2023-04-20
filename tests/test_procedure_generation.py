@@ -230,17 +230,29 @@ def test_generate_procedure_8_to_1(random_test_art_ids, num_artpieces, canvas_ob
             lines_added.append(diff)
 
     # test the specific lines changed:
-    canvas_locations_prefix_str = "canvas_locations = "
-    location_line = [s for s in lines_added if canvas_locations_prefix_str in s]
-    assert len(location_line) == 1
+    def get_added_line_with_substring(substring):
+        line = [s for s in lines_added if substring in s]
+        assert len(line) == 1
 
-    location_line = location_line[0]
+        line = line[0]
+        return line
+
+    canvas_locations_prefix_str = "canvas_locations = "
+    location_line = get_added_line_with_substring(canvas_locations_prefix_str)
+
     dictionary_start = location_line.find(canvas_locations_prefix_str) + len(canvas_locations_prefix_str)
     dict_string = location_line[dictionary_start:]
     just_canvas_dict = eval(dict_string)
     assert len(just_canvas_dict.keys()) == 1
     assert len(just_canvas_dict.values()) == 1
     assert next(iter(just_canvas_dict.values())) == '5'
+
+    # Checks that the procol name has been modified
+    protocol_name_prefix_str = 'protocolName'
+    protocol_name_line = get_added_line_with_substring(protocol_name_prefix_str)
+
+
+
 
 
 
