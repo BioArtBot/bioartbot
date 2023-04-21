@@ -115,7 +115,7 @@ def distribute_to_agar(pipette, vol, source, destination, disposal_vol):
                 asp_vol = remaining_vol + disposal_vol - pipette.current_volume
 
             pipette.aspirate(asp_vol, source)
-            pipette.touch_tip(source, v_offset= -15)
+            pipette.touch_tip(source)
 
         pipette.move_to(well)
         pipette.dispense(vol)
