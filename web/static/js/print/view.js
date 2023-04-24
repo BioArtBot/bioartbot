@@ -9,6 +9,8 @@ app.view = function($, model) {
 		, submissionBox: $('#submission-block')
 		, submissionModalBtn: $('#submit-show')
 		, labwareSelector: $('.print-submit>#select-labware')
+		, pipetteSelector: $('.print-submit>#select-pipette')
+		, locationSelector: $('#select-location')
 		, printSubmit: $('.print-submit>.submit-button')
 		, jobBoard: $('.job-board')
 		, jobHeader: $('.job-header')
@@ -155,6 +157,55 @@ app.view = function($, model) {
 		
 		return that;
 	}(DOM.labwareSelector)
+
+
+	that.pipetteSelector = function(pipetteSelector) {
+		let that = {};
+
+		that.addOption = function(option) {
+			pipetteSelector.append(`<option id=ID${option}>${option}</option>`)
+		}
+
+		that.getValue = function() {
+			return pipetteSelector[0].value;
+		}
+
+		that.register = {
+			onChange: function(handler) {
+				pipetteSelector.on('change', function(event) {
+					handler();
+				});
+			}
+		}
+		
+		return that;
+	}(DOM.pipetteSelector)
+
+
+	that.locationSelector = function(locationSelector) {
+		let that = {};
+
+		that.addOption = function(option) {
+			let display;
+			if(option==''){display='All Locations'; option='ALL';}else{display=option}
+			locationSelector.append(`<option id=ID_${option}>${display}</option>`)
+		}
+
+		that.getValue = function() {
+			return locationSelector[0].value;
+		}
+
+		that.register = {
+			onChange: function(handler) {
+				locationSelector.on('change', function(event) {
+					handler();
+				});
+			}
+		}
+		
+		return that;
+	}(DOM.locationSelector)
+
 
 	that.selectedJobList = function(selectedJobList, selectedJobsPlaceholder) {
 		let that = {};

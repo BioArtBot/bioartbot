@@ -227,7 +227,7 @@ class LocationModel(SurrogatePK, Model):
     BioArtBot doesn't differentiate between, e.g. two different shelves
     in a lab. But two different labs a short drive from each other may
     be separate Locations. A location represents an area that can be 
-    reasonably accessed by on person without making special arrangements.
+    reasonably accessed by one person without making special arrangements.
     In practice, BioArtBot uses this to decide if resources are available
     to a person working in a certain location and filter jobs based on
     that information.

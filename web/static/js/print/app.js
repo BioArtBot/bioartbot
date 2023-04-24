@@ -10,6 +10,8 @@ app.init = function() {
 	model.register(presentation);
 	model.jobs.get();
 	model.labware.get_available();
+	model.pipette.get_available();
+	model.location.get_available();
 	model.user.load_name();
 };
 

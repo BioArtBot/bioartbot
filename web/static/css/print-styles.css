@@ -42,6 +42,10 @@ img.job-data {
     font-weight: bold;
 }
 
+.selector-label {
+    text-align: left;
+}
+
 #output-messages {
     text-align: left;
 }

@@ -147,11 +147,14 @@ def receive_print_request():
 
     artpiece_ids = request.get_json()['ids']
     labware = request.get_json()['labware']
+    pipette = request.get_json()['pipette']
+    location = request.get_json()['location']
 
     option_args = {'notebook':False
                     ,'palette': 'cryo_35_tuberack_2000ul'
-                    ,'pipette': 'p20_single_gen2'
+                    ,'pipette': pipette
                     ,'canvas': labware['canvas']
+                    , 'location': location
                     }
     
     requestor = get_current_user()
