@@ -11,7 +11,7 @@ from slugify import slugify
 from flask import current_app
 from flask_jwt_extended import create_access_token, decode_token
 from web.api.file_manager import file_manager
-from web.database.models import ArtpieceModel, SubmissionStatus
+from web.database.models import ArtpieceModel, ColorBlockModel, SubmissionStatus
 from web.api.user.colors import get_available_color_mapping
 
 def _decode_to_image(pixel_art_color_encoding, color_mapping
@@ -47,6 +47,20 @@ def _create_unique_slug(title):
         postfix = int(m.group(0)) + 1
     return f'{slug}#{postfix}'
 
+def _make_color_blocks(cls, art_json):
+    """
+    Breaks art in JSON format into individual ColorBlock objects,
+    which can each be stored in the database
+    """
+    color_blocks = list()
+    for color in art_json:
+        color_blocks.append(
+            ColorBlockModel(color_id=color, 
+                            coordinates=art_json[color]
+            )
+        )
+    return color_blocks
+
 
 _Model = ArtpieceModel
 _fm = file_manager()
@@ -65,13 +79,15 @@ class Artpiece():
         slug = _create_unique_slug(title)
         image_as_bytes = _decode_to_image(art, get_available_color_mapping(), canvas_size)
         image_uri = _fm.store_file(io.BytesIO(image_as_bytes), f'{slug}_{int(submit_date.timestamp()*1000)}.jpg')
+
+        color_blocks = _make_color_blocks(art)
         
         return cls(
-                _Model(slug=slug, title=title, submit_date=submit_date, art=art
+                _Model(slug=slug, title=title, submit_date=submit_date, color_blocks=color_blocks
                     , canvas_size=canvas_size, status=SubmissionStatus.submitted
                     , image_uri=image_uri, user_id=user_id, confirmed=False)
                 .save())
-
+    
     @classmethod
     def get_by_id(cls, id):
         model = _Model.get_by_id(id)

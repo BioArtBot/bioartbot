@@ -30,7 +30,6 @@ class ArtpieceModel(SurrogatePK, Model):
     title = Column(db.String(50), nullable=False)
     user_id = Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     submit_date = Column(db.DateTime(), nullable=False)
-    art = Column(db.JSON(), nullable=False, name='art_encoding')
     canvas_size = Column(db.JSON(), nullable=False)
     status = Column(
             db.Enum(SubmissionStatus, values_callable=lambda x: [e.value for e in x])
@@ -41,6 +40,18 @@ class ArtpieceModel(SurrogatePK, Model):
     def __repr__(self):
         return '<%r: %r>' % (self.id, self.title)
 
+class ColorBlockModel(SurrogatePK, Model):
+    __tablename__ = 'color_blocks'
+
+    artpiece = relationship('ArtpieceModel', backref='color_blocks')
+    artpiece_id = Column('artpiece_id', db.ForeignKey('artpieces.id'), primary_key=True)
+    color = relationship('BacterialColorModel')
+    color_id = Column('color_id', db.ForeignKey('bacterial_colors.id'), primary_key=True)
+    coordinates = Column(db.JSON(), nullable=False)
+
+    def __repr__(self):
+        return '<%r: %r>' % (self.artpiece, self.color)
+    
 class UserRole(OrderedEnum):
     artist = 'Artist'
 
