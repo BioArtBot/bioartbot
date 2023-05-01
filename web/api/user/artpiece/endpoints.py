@@ -28,13 +28,14 @@ artpiece_blueprint = Blueprint('artpiece', __name__)
 @artpiece_blueprint.route('/artpieces', methods=('GET', ))
 def get_artpieces_meta():
     monthly_limit = current_app.config['MONTLY_SUBMISSION_LIMIT']
+    location = location = request.args.get('location', None)
     return jsonify(
             {
                 'meta':
                 {
                     'submission_limit_exceeded': has_reached_monthly_submission_limit(
                         monthly_limit)
-                    , 'bacterial_colors': get_available_colors_as_dicts()
+                    , 'bacterial_colors': get_available_colors_as_dicts(location)
                 }
                 , 'data': None
             }), 200
@@ -181,11 +182,15 @@ def receive_print_request():
 def get_all_colors():
     """
     Gets all available colors, including the RGBA values and
-    associated strains.
+    associated strains. If a location is provided, will only
+    return colors available at that location.
 
     Return: JSON object containing all available colors.
     """
-    colors = get_available_colors()
+    args = request.args
+    location = args.get('location', None)
+
+    colors = get_available_colors(location)
     schema = ColorSchema(many=True)
     serialized = schema.dumps(colors)
 

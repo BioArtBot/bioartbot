@@ -9,6 +9,7 @@ app.init = function() {
 
 	model.register(presentation);
 	model.canvas.meta.get();
+	model.location.get_available();
 };
 
 $(document).ready(function () {

@@ -40,8 +40,8 @@ def art_dimensions(canvas_object_in_db, art_from_test_db):
     print(wellspacing/well_radius)
     #END DEBUG
 
-    for color in artpiece.art:
-        for pixel in artpiece.art[color]:
+    for color in artpiece.color_blocks:
+        for pixel in color.coordinates:
             well_radius, wellspacing, x_max_mm, y_max_mm = get_spacing(canvas, grid_size)
             plate_position = plate_location_map(pixel, canvas, well_radius, wellspacing, x_max_mm, y_max_mm)
             all_plate_positions.append(plate_position)
