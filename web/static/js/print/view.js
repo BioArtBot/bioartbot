@@ -186,8 +186,8 @@ app.view = function($, model) {
 
 		that.addOption = function(option) {
 			let display;
-			if(option==''){display='All Locations'; option='ALL';}else{display=option}
-			locationSelector.append(`<option id=ID_${option}>${display}</option>`)
+			if(option=='ALL'){display='All Locations'; option='ALL';}else{display=option}
+			locationSelector.append(`<option id=ID_${option} value=${option}>${display}</option>`)
 		}
 
 		that.getValue = function() {

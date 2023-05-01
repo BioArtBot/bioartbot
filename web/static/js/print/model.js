@@ -154,7 +154,7 @@ app.model = function() {
 
 	function Location(){
 		let that = {};
-		const available = [""];
+		const available = ["ALL"];
 		const selected = {};
 
 		that.select = function(selected_location) {
@@ -299,8 +299,12 @@ app.model = function() {
 
 	that.jobs = {
 		get: function() {
+			let request_url = 'print_jobs?unprinted_only=false&confirmed_only=true'
+			if(location.selected["location"] && location.selected["location"]!='ALL'){
+				request_url = request_url + '&location=' + location.selected["location"];
+			}
 			$.ajax({
-				url: 'print_jobs?unprinted_only=false&confirmed_only=true&location=PARIS'
+				url: request_url
 				, type: 'GET'
 				, dataType: 'json'
 				, cache: 'false'

@@ -85,7 +85,10 @@ app.presentation = function(view, model) {
 
 	view.locationSelector.register.onChange(function() {
 		let location = view.locationSelector.getValue();
+		view.board.clear();
 		model.location.select(location);
+		model.jobs.clear();
+		model.jobs.get(location);
 	});
 
 	view.submit.register.onClick(function() {
@@ -173,6 +176,8 @@ app.presentation = function(view, model) {
 			model.user.set_name(action.payload.user);
 			model.jobs.get();
 			model.labware.get_available();
+			model.pipette.get_available();
+			model.location.get_available();
 			view.submit.enable();
 		} 
 		, 'UPDATE_USER' : function(action) {
