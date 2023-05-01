@@ -150,10 +150,11 @@ def receive_print_request():
 
     artpiece_ids = request.get_json()['ids']
     labware = request.get_json()['labware']
+    pipette = request.get_json()['pipette']
 
     option_args = {'notebook':False
                     ,'palette': 'cryo_35_tuberack_2000ul'
-                    ,'pipette': labware['pipette']
+                    ,'pipette': pipette
                     ,'canvas': labware['canvas']
                     }
     
