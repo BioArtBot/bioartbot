@@ -26,7 +26,6 @@ class ArtpieceModel(Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     art = sa.Column(sa.JSON(), nullable=False, name='art_encoding')
-    #scolor_blocks = relationship('ColorBlockModel', lazy="joined")
 
 
 class ColorBlockModel(Base):

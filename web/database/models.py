@@ -43,10 +43,10 @@ class ArtpieceModel(SurrogatePK, Model):
 class ColorBlockModel(SurrogatePK, Model):
     __tablename__ = 'color_blocks'
 
-    artpiece = relationship('ArtpieceModel', backref='color_blocks')
-    artpiece_id = Column('artpiece_id', db.ForeignKey('artpieces.id'), primary_key=True)
+    artpiece = relationship('ArtpieceModel', backref='color_blocks', lazy="joined")
+    artpiece_id = Column('artpiece_id', db.ForeignKey('artpieces.id'), primary_key=True, autoincrement='ignore_fk')
     color = relationship('BacterialColorModel')
-    color_id = Column('color_id', db.ForeignKey('bacterial_colors.id'), primary_key=True)
+    color_id = Column('color_id', db.ForeignKey('bacterial_colors.id'), primary_key=True, autoincrement='ignore_fk')
     coordinates = Column(db.JSON(), nullable=False)
 
     def __repr__(self):

@@ -64,11 +64,12 @@ class PrintableSchema(Schema):
     img_uri = fields.Function(lambda obj: _fm.get_file_url(f'{obj.slug}_{int(obj.submit_date.timestamp()*1000)}.jpg'))
 
     @pre_dump
-    def make_art_dict(self):
+    def make_art_dict(self, obj, **kwargs):
         art_dict = {}
-        for color_block in self.color_blocks:
+        for color_block in obj.color_blocks:
             art_dict[color_block.color] = color_block.coordinates
-        return art_dict
+            obj.art = art_dict
+        return obj
 
     class Meta:
         ordered = True

@@ -123,7 +123,9 @@ def get_print_jobs():
     args = request.args
     unprinted_only = args.get('unprinted_only', 'False').lower() == 'true'
     confirmed_only = args.get('confirmed_only', 'True').lower() == 'true'
-    print_jobs = Artpiece.get_printable(unprinted_only=unprinted_only, confirmed_only=confirmed_only)
+    location = args.get('location', None)
+
+    print_jobs = Artpiece.get_printable(unprinted_only=unprinted_only, confirmed_only=confirmed_only, location=location)
     schema = PrintableSchema(many=True)
     serialized = schema.dumps(print_jobs)
 
@@ -148,14 +150,17 @@ def receive_print_request():
     artpiece_ids = request.get_json()['ids']
     labware = request.get_json()['labware']
     pipette = request.get_json()['pipette']
-    location = request.get_json()['location']
 
     option_args = {'notebook':False
                     ,'palette': 'cryo_35_tuberack_2000ul'
                     ,'pipette': pipette
                     ,'canvas': labware['canvas']
-                    , 'location': location
                     }
+    
+    try:
+        option_args['location'] = request.get_json()['location']
+    except KeyError:
+        pass
     
     requestor = get_current_user()
     msg, procedure_loc = make_procedure(artpiece_ids, requestor=requestor, option_args=option_args)

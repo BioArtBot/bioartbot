@@ -86,7 +86,6 @@ app.view = function($, model) {
 		};
 
 		that.unhover = function(job) { //not implemented
-			console.log(job);
 			job.css('border', "silver 1px dotted;");
 		};
 

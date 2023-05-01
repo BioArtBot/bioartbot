@@ -158,7 +158,11 @@ app.model = function() {
 		const selected = {};
 
 		that.select = function(selected_location) {
-			selected["location"] = selected_location;
+			if(selected_location == "All Locations"){
+				delete selected.location;
+			} else {
+				selected["location"] = selected_location;
+			}
 		}
 
 		that.load = function(location_data) {
@@ -296,7 +300,7 @@ app.model = function() {
 	that.jobs = {
 		get: function() {
 			$.ajax({
-				url: 'print_jobs?unprinted_only=false&confirmed_only=true'
+				url: 'print_jobs?unprinted_only=false&confirmed_only=true&location=PARIS'
 				, type: 'GET'
 				, dataType: 'json'
 				, cache: 'false'
@@ -347,7 +351,6 @@ app.model = function() {
 			return jobs.data[id].img_uri;
 		}
 		, submit: function() {
-			console.log(pipette)
 			$.ajax({
 				url: 'procedure_request'
 				, type: 'POST'
