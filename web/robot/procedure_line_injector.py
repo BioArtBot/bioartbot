@@ -156,14 +156,14 @@ class ProcedureLineInjector:
         for artpiece in artpieces:
             grid_size = artpiece.canvas_size
             well_radius, wellspacing, x_max_mm, y_max_mm = self.get_spacing(canvas, grid_size)
-            for color in artpiece.art:
+            for color_block in artpiece.color_blocks:
                 pixel_list = self.optimize_print_order(
-                    [self.plate_location_map(pixel, canvas, well_radius, wellspacing, x_max_mm, y_max_mm) for pixel in artpiece.art[color]],
+                    [self.plate_location_map(pixel, canvas, well_radius, wellspacing, x_max_mm, y_max_mm) for pixel in color_block.coordinates],
                     units_per_mm = 1 / well_radius
                 )
-                if color not in pixels_by_color:
-                    pixels_by_color[color] = dict()
-                pixels_by_color[color][artpiece.slug] = pixel_list
+                if color_block.color_id not in pixels_by_color:
+                    pixels_by_color[color_block.color_id] = dict()
+                pixels_by_color[color_block.color_id][artpiece.slug] = pixel_list
         procedure = template_string.replace('%%PIXELS GO HERE%%', str(pixels_by_color))
         return procedure
 
