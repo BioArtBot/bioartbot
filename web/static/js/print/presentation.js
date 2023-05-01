@@ -83,6 +83,11 @@ app.presentation = function(view, model) {
 		model.labware.select(labware);
 	});
 
+	view.pipetteSelector.register.onChange(function() {
+		let pipette = view.pipetteSelector.getValue();
+		model.pipette.select(pipette);
+	});
+
 	view.locationSelector.register.onChange(function() {
 		let location = view.locationSelector.getValue();
 		view.board.clear();
