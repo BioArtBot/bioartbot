@@ -83,6 +83,19 @@ app.presentation = function(view, model) {
 		model.labware.select(labware);
 	});
 
+	view.pipetteSelector.register.onChange(function() {
+		let pipette = view.pipetteSelector.getValue();
+		model.pipette.select(pipette);
+	});
+
+	view.locationSelector.register.onChange(function() {
+		let location = view.locationSelector.getValue();
+		view.board.clear();
+		model.location.select(location);
+		model.jobs.clear();
+		model.jobs.get(location);
+	});
+
 	view.submit.register.onClick(function() {
 		if (!isSubmitDisabled) {
 			isSubmitDisabled = true;
@@ -132,6 +145,18 @@ app.presentation = function(view, model) {
 		}
 	}
 
+	function populatePipetteOptions(pipettes) {
+		for (let i=0; i!=pipettes.length; ++i) {
+			view.pipetteSelector.addOption(pipettes[i]);
+		}
+	}
+
+	function populateLocationOptions(locations) {
+		for (let i=0; i!=locations.length; ++i) {
+			view.locationSelector.addOption(locations[i]);
+		}
+	}
+
 	function errorsToMessage(errors) {
 		let errorMessage = defaultErrorMessage;
 		for (let i=0; i!=errors.length; ++i) {
@@ -156,6 +181,8 @@ app.presentation = function(view, model) {
 			model.user.set_name(action.payload.user);
 			model.jobs.get();
 			model.labware.get_available();
+			model.pipette.get_available();
+			model.location.get_available();
 			view.submit.enable();
 		} 
 		, 'UPDATE_USER' : function(action) {
@@ -173,6 +200,12 @@ app.presentation = function(view, model) {
 		}
 		, 'LABWARE_DATA': function(action) {
 			populateLabOptions(action.payload.labware_data)
+		}
+		, 'PIPETTE_DATA': function(action) {
+			populatePipetteOptions(action.payload.pipette_data)
+		}
+		, 'LOCATION_DATA': function(action) {
+			populateLocationOptions(action.payload.location_data)
 		}
 		, 'PRINT_REQ_SUBMIT': function(action) {
 			if (action.error) {

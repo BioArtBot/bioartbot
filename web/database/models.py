@@ -30,7 +30,6 @@ class ArtpieceModel(SurrogatePK, Model):
     title = Column(db.String(50), nullable=False)
     user_id = Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     submit_date = Column(db.DateTime(), nullable=False)
-    art = Column(db.JSON(), nullable=False, name='art_encoding')
     canvas_size = Column(db.JSON(), nullable=False)
     status = Column(
             db.Enum(SubmissionStatus, values_callable=lambda x: [e.value for e in x])
@@ -41,6 +40,18 @@ class ArtpieceModel(SurrogatePK, Model):
     def __repr__(self):
         return '<%r: %r>' % (self.id, self.title)
 
+class ColorBlockModel(SurrogatePK, Model):
+    __tablename__ = 'color_blocks'
+
+    artpiece = relationship('ArtpieceModel', backref='color_blocks', lazy="joined")
+    artpiece_id = Column('artpiece_id', db.ForeignKey('artpieces.id'), primary_key=True, autoincrement='ignore_fk')
+    color = relationship('BacterialColorModel')
+    color_id = Column('color_id', db.ForeignKey('bacterial_colors.id'), primary_key=True, autoincrement='ignore_fk')
+    coordinates = Column(db.JSON(), nullable=False)
+
+    def __repr__(self):
+        return '<%r: %r>' % (self.artpiece, self.color)
+    
 class UserRole(OrderedEnum):
     artist = 'Artist'
 
@@ -227,7 +238,7 @@ class LocationModel(SurrogatePK, Model):
     BioArtBot doesn't differentiate between, e.g. two different shelves
     in a lab. But two different labs a short drive from each other may
     be separate Locations. A location represents an area that can be 
-    reasonably accessed by on person without making special arrangements.
+    reasonably accessed by one person without making special arrangements.
     In practice, BioArtBot uses this to decide if resources are available
     to a person working in a certain location and filter jobs based on
     that information.
