@@ -8,8 +8,10 @@ app.init = function() {
 	let presentation = this.presentation(view, model);
 
 	model.register(presentation);
+	model.location.get_available();
 	model.jobs.get();
 	model.labware.get_available();
+	model.pipette.get_available();
 	model.user.load_name();
 };
 

@@ -188,7 +188,7 @@ hr.section-break:before {
 }
 
 /* Styles buttons, including a change of displayed mouse cursor to inform user he/she is hovering over something clickable */
-.submit-button, .quick-fill, .erase-mode, .draw-mode, .submit-input {
+.submit-button, .quick-fill, .erase-mode, .draw-mode, .submit-input, .dropdown {
 	box-shadow: inset 0px 1px 0 0 #fff;
 	background: linear-gradient(#f9f9f9 5%, #e9e9e9 100%);
 	/* creates rounded edges (more pixels -> more rounded) */

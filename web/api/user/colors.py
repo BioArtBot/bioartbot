@@ -2,19 +2,22 @@ from flask import g
 from marshmallow import fields, Schema, post_dump
 from sqlalchemy.exc import DataError
 from web.extensions import db
-from web.database.models import BacterialColorModel, ApplicationModel
+from web.database.models import BacterialColorModel, ApplicationModel, StrainModel, LocationModel
 from web.api.biofoundry.strain import Strain
 from .exceptions import InvalidUsage
 from ..biofoundry.exceptions import (DataSyntaxError, DBError)
 
 BacterialColor = BacterialColorModel
 
-def get_available_colors():
-    return BacterialColor.query.filter(BacterialColor.in_use == True).all()
+def get_available_colors(location=None):
+    query = BacterialColor.query.filter(BacterialColor.in_use == True)
+    if location:
+        query = query.join(StrainModel).join(StrainModel.locations).filter(LocationModel.name == location)
+    return query.all()
 
-def get_available_colors_as_dicts():
+def get_available_colors_as_dicts(location=None):
     return [{'id': color.id, 'name': color.name, 'rgba': color.rgba} for color in
-            get_available_colors()]
+            get_available_colors(location)]
 
 def get_all_colors():
     return BacterialColor.query.all()

@@ -22,6 +22,7 @@ app.view = function($, model) {
 		, errorModal: $('#error-modal')
 		, errorBody: $('#error-modal').find('.error-msg')
 		, expand: $('.expand')
+		, locationSelector: $('#select-location')
 	}
 
 	// Initialise tooltips
@@ -127,6 +128,11 @@ app.view = function($, model) {
 				+'" style="background:'+color+';"></div>'
 			);
 		};
+
+		that.clear = function() {
+			colorPicker[0].innerHTML = '';
+		}
+
 		that.register = {
 			onClick: function(handler) {
 				colorPicker.on('click', function(event) {
@@ -180,6 +186,30 @@ app.view = function($, model) {
 		};
 		return that;
 	}(DOM.eraseMode);
+
+	that.locationSelector = function(locationSelector) {
+		let that = {};
+
+		that.addOption = function(option) {
+			let display;
+			if(option=='ALL'){display='All'; option='ALL';}else{display=option}
+			locationSelector.append(`<option id=ID_${option} value=${option}>${display}</option>`)
+		}
+
+		that.getValue = function() {
+			return locationSelector[0].value;
+		}
+
+		that.register = {
+			onChange: function(handler) {
+				locationSelector.on('change', function(event) {
+					handler();
+				});
+			}
+		}
+		
+		return that;
+	}(DOM.locationSelector)
 
 	that.email = function(email) {
 		let that = {};
