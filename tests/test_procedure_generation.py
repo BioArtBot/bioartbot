@@ -4,12 +4,26 @@ import os
 import math
 from difflib import ndiff
 from flask import current_app
-from web.robot.art_processor import (optimize_print_order,
-                                     euclidean_distance,
-                                     get_spacing,
-                                     plate_location_map,
-                                     make_procedure
-)
+from web.robot.art_processor import make_procedure
+from web.robot.procedure_line_injector import ProcedureLineInjector
+
+procedureLineInjector = ProcedureLineInjector()
+
+@pytest.fixture(autouse=True)
+def before_and_after_test():
+    procedureLineInjector = ProcedureLineInjector()
+
+def optimize_print_order(list, units_per_mm):
+    return procedureLineInjector.optimize_print_order(list, units_per_mm)
+
+def euclidean_distance(start, end):
+    return procedureLineInjector.euclidean_distance(start, end)
+
+def get_spacing(plate, grid_size):
+    return procedureLineInjector.get_spacing(plate, grid_size)
+
+def plate_location_map(coord, plate, well_radius, wellspacing, x_max_mm, y_max_mm):
+    return procedureLineInjector.plate_location_map(coord, plate, well_radius, wellspacing, x_max_mm, y_max_mm)
 
 #Scaling tests setup fixture
 @pytest.fixture(scope='function')
@@ -181,3 +195,84 @@ def test_full_plate_used(art_dimensions):
         
     assert round(max_reached_x, 5) == round(max_art_position_x, 5)
     assert round(max_reached_y, 5) == round(max_art_position_y, 5)
+
+@pytest.mark.usefixtures('test_app', 'clear_database')
+@pytest.mark.parametrize('num_artpieces', [1])
+def test_generate_procedure_8_to_1(random_test_art_ids, num_artpieces, canvas_object_in_db, test_database):
+    """Tests that a 8_to_1 pipette procedure is made  
+    """
+    artpiece_ids, art_params = random_test_art_ids
+    artpiece_ids = artpiece_ids[:num_artpieces]
+    print(random_test_art_ids[0], artpiece_ids)
+    status, procedure_path = make_procedure(artpiece_ids,
+                                            requestor = None,
+                                            SQLALCHEMY_DATABASE_URI = test_database.engine.url,
+                                            option_args={'notebook':False
+                                                        ,'palette':'corning_96_wellplate_360ul_flat'
+                                                        ,'pipette':'p10_multi'
+                                                        ,'canvas': canvas_object_in_db.name
+                                                        }
+    )
+    print(status)
+    assert procedure_path is not None
+    
+    template_dir = procedure_path[0].split('/procedures')[0]
+    with open(os.path.join(template_dir,'ART_TEMPLATE_8_TO_1.py')) as template_file:
+                template_string = template_file.read()
+    with open(os.path.join(*procedure_path)) as output_file:
+                output_string = output_file.read()
+    diffs = ndiff(template_string.splitlines(1), output_string.splitlines(1))
+    lines_added = []
+    for diff in diffs:
+        if diff[0] == '-':
+            assert '%%' in diff
+        elif diff[0] == '+':
+            lines_added.append(diff)
+
+    # test the specific lines changed:
+    def get_added_line_with_substring(substring):
+        line = [s for s in lines_added if substring in s]
+        assert len(line) == 1
+
+        line = line[0]
+        return line
+
+    canvas_locations_prefix_str = "canvas_locations = "
+    location_line = get_added_line_with_substring(canvas_locations_prefix_str)
+
+    dictionary_start = location_line.find(canvas_locations_prefix_str) + len(canvas_locations_prefix_str)
+    dict_string = location_line[dictionary_start:]
+    just_canvas_dict = eval(dict_string)
+    assert len(just_canvas_dict.keys()) == 1
+    assert len(just_canvas_dict.values()) == 1
+    assert next(iter(just_canvas_dict.values())) == '5'
+
+    # Checks that the procol name has been modified
+    protocol_name_prefix_str = "'protocolName': '"
+    get_added_line_with_substring(protocol_name_prefix_str)
+
+@pytest.mark.usefixtures('test_app', 'clear_database')
+@pytest.mark.parametrize('num_artpieces', [2,3,4])
+def test_8_to_1_multiple_art_pieces(random_test_art_ids, num_artpieces, canvas_object_in_db, test_database):
+    """Tests that a 8_to_1 pipette procedure is made  
+    """
+    artpiece_ids, art_params = random_test_art_ids
+    artpiece_ids = artpiece_ids[:num_artpieces]
+    print(random_test_art_ids[0], artpiece_ids)
+    status, procedure_path = make_procedure(artpiece_ids,
+                                            requestor = None,
+                                            SQLALCHEMY_DATABASE_URI = test_database.engine.url,
+                                            option_args={'notebook':False
+                                                        ,'palette':'corning_96_wellplate_360ul_flat'
+                                                        ,'pipette':'p10_multi'
+                                                        ,'canvas': canvas_object_in_db.name
+                                                        }
+    )
+
+    assert procedure_path is None
+    assert status[-1] == "ERROR: 8 to 1 pipette cannot accommodate more than 1 artpiece."
+
+
+
+
+    
