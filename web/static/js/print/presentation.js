@@ -12,7 +12,8 @@ app.presentation = function(view, model) {
 						 +'mark all selected art as in-process. Are you sure?';
 
 	const codeToMessage = {
-		'joblist_empty': 'Select a job to manage'
+		'joblist_empty': 'Select a job to manage',
+		'pipette_invalid': 'Multi-channel pipettes can only handle one artpiece per job. Pick one at a time.'
 	};
 
 	const emptyJobListMessage = '[Click A Row To Select]';
@@ -194,6 +195,9 @@ app.presentation = function(view, model) {
 			view.submit.disable();
 			view.board.clear();
 			model.jobs.clear();
+		}
+		, 'SUBMISSION_ERROR' : function(action) {
+			view.warningModal.show(genericErrorMessage + action.payload.e);
 		}
 		, 'JOB_DATA': function(action) {
 			createJobBoard(action.payload.job_data);

@@ -378,11 +378,20 @@ app.model = function() {
 				});
 			})
 			.fail(function(jqXHR, textStatus, errorThrown) {
-				subject.notifyObservers({
-					type: 'LOGIN_REQUIRED'
-					, error: true
-					, payload: jqXHR.responseJSON.errors
-				});
+				if(jqXHR.status==401){
+					subject.notifyObservers({
+						type: 'LOGIN_REQUIRED'
+						, error: true
+						, payload: jqXHR.responseJSON.errors
+					});
+				}
+				if(jqXHR.status==400 || jqXHR.status==404){
+					subject.notifyObservers({
+						type: 'PRINT_REQ_SUBMIT'
+						, error: true
+						, payload: jqXHR.responseJSON.errors
+					});
+				}
 			});
 		}
 

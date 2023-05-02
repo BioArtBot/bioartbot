@@ -13,6 +13,7 @@ _FORBIDDEN = error_template('forbidden', 'user does not have access')
 _BAD_REFERENCE = error_template('bad_reference', 'Referenced item doesn\'t exist')
 _NOT_IMPLEMENTED = error_template('not_implemented', 'This endpoint has not been implemented')
 _CANNOT_CHANGE_OWN_ROLE = error_template('cannot_change_own_role', 'You cannot change your own role')
+_INVALID_PIPETTE = error_template('pipette_invalid', 'cannot print multiple artpieces with that pipette')
 
 class InvalidUsage(Exception):
     status_code = 400
@@ -73,6 +74,10 @@ class InvalidUsage(Exception):
     @classmethod
     def cannot_change_own_role(cls):
         return cls(_CANNOT_CHANGE_OWN_ROLE, status_code=403)
+    
+    @classmethod
+    def invalid_pipette(cls):
+        return cls(_INVALID_PIPETTE, status_code=400)
 
 class InvalidPasswordException(InvalidUsage):
     def __init__(self):

@@ -162,6 +162,9 @@ def receive_print_request():
         option_args['location'] = request.get_json()['location']
     except KeyError:
         pass
+
+    if option_args['pipette'][-5:] == 'multi' and len(artpiece_ids) > 1:
+        raise InvalidUsage.invalid_pipette()
     
     requestor = get_current_user()
     msg, procedure_loc = make_procedure(artpiece_ids, requestor=requestor, option_args=option_args)
