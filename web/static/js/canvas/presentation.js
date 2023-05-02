@@ -196,6 +196,8 @@ app.presentation = function(view, model) {
 		view.colorPicker.clear();
 		model.location.select(location);
 		model.canvas.meta.get();
+		model.canvas.reset();
+		view.canvas.reset();
 	});
 
 	function populateLocationOptions(locations) {
