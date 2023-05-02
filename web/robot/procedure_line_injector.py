@@ -162,8 +162,8 @@ class ProcedureLineInjector:
                     units_per_mm = 1 / well_radius
                 )
                 if color_block.color_id not in pixels_by_color:
-                    pixels_by_color[color_block.color_id] = dict()
-                pixels_by_color[color_block.color_id][artpiece.slug] = pixel_list
+                    pixels_by_color[str(color_block.color_id)] = dict()
+                pixels_by_color[str(color_block.color_id)][artpiece.slug] = pixel_list
         procedure = template_string.replace('%%PIXELS GO HERE%%', str(pixels_by_color))
         return procedure
 
