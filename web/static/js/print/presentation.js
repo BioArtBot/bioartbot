@@ -12,7 +12,8 @@ app.presentation = function(view, model) {
 						 +'mark all selected art as in-process. Are you sure?';
 
 	const codeToMessage = {
-		'joblist_empty': 'Select a job to manage'
+		'joblist_empty': 'Select a job to manage',
+		'pipette_invalid': 'Multi-channel pipettes can only handle one artpiece per job. Pick one at a time.'
 	};
 
 	const emptyJobListMessage = '[Click A Row To Select]';
@@ -78,6 +79,24 @@ app.presentation = function(view, model) {
 		view.login.reset();
 	});
 	
+	view.labwareSelector.register.onChange(function() {
+		let labware = view.labwareSelector.getValue();
+		model.labware.select(labware);
+	});
+
+	view.pipetteSelector.register.onChange(function() {
+		let pipette = view.pipetteSelector.getValue();
+		model.pipette.select(pipette);
+	});
+
+	view.locationSelector.register.onChange(function() {
+		let location = view.locationSelector.getValue();
+		view.board.clear();
+		model.location.select(location);
+		model.jobs.clear();
+		model.jobs.get(location);
+	});
+
 	view.submit.register.onClick(function() {
 		if (!isSubmitDisabled) {
 			isSubmitDisabled = true;
@@ -103,10 +122,39 @@ app.presentation = function(view, model) {
 		}
 
 		view.board.initialize_headers(col);
-	
+		
+		const status_order = {
+			'Submitted': 0,
+			'Processing': 1,
+			'Processed': 2,
+		}
+
+		printables = Object.entries(printables);
+		printables.sort((a, b) =>
+			status_order[a[1].status] - status_order[b[1].status]
+		);
+
 		for (var id_key in printables) {
-			job = printables[id_key];
+			job = printables[id_key][1];
 			view.board.add(job);
+		}
+	}
+
+	function populateLabOptions(labware) {
+		for (let i=0; i!=labware.length; ++i) {
+			view.labwareSelector.addOption(labware[i]);
+		}
+	}
+
+	function populatePipetteOptions(pipettes) {
+		for (let i=0; i!=pipettes.length; ++i) {
+			view.pipetteSelector.addOption(pipettes[i]);
+		}
+	}
+
+	function populateLocationOptions(locations) {
+		for (let i=0; i!=locations.length; ++i) {
+			view.locationSelector.addOption(locations[i]);
 		}
 	}
 
@@ -133,6 +181,9 @@ app.presentation = function(view, model) {
 			view.login.hide();
 			model.user.set_name(action.payload.user);
 			model.jobs.get();
+			model.labware.get_available();
+			model.pipette.get_available();
+			model.location.get_available();
 			view.submit.enable();
 		} 
 		, 'UPDATE_USER' : function(action) {
@@ -145,8 +196,20 @@ app.presentation = function(view, model) {
 			view.board.clear();
 			model.jobs.clear();
 		}
+		, 'SUBMISSION_ERROR' : function(action) {
+			view.warningModal.show(genericErrorMessage + action.payload.e);
+		}
 		, 'JOB_DATA': function(action) {
 			createJobBoard(action.payload.job_data);
+		}
+		, 'LABWARE_DATA': function(action) {
+			populateLabOptions(action.payload.labware_data)
+		}
+		, 'PIPETTE_DATA': function(action) {
+			populatePipetteOptions(action.payload.pipette_data)
+		}
+		, 'LOCATION_DATA': function(action) {
+			populateLocationOptions(action.payload.location_data)
 		}
 		, 'PRINT_REQ_SUBMIT': function(action) {
 			if (action.error) {

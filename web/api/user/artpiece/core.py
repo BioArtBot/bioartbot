@@ -2,7 +2,10 @@ import datetime
 import json
 from marshmallow import ValidationError
 from jwt import (ExpiredSignatureError, PyJWTError)
-from .serializers import ArtpieceSchema
+from sqlalchemy.exc import IntegrityError, DataError
+from web.api.biofoundry.exceptions import DBError
+from web.api.user.colors import BacterialColor
+from .serializers import ArtpieceSchema, StatusSchema, ColorSchema
 from .artpiece import (Artpiece, TokenIDMismatchError)
 from .exceptions import (UserSubmissionLimitException, MonthlySubmissionLimitException,
         InvalidConfirmationTokenException, ExpiredConfirmationTokenException)
@@ -29,6 +32,17 @@ def validate_and_extract_artpiece_data(json_data, color_keys):
         raise InvalidUsage.from_validation_error(err)
     return data['email'], data['title'], data['art'], data['canvas_size']
 
+def validate_and_extract_status_update(json_data, artpiece_id):
+    try:
+        data = StatusSchema().load(json_data)
+        artpiece = Artpiece.get_by_id(artpiece_id)
+        assert artpiece is not None
+    except ValidationError as err:
+        raise InvalidUsage.from_validation_error(err)
+    except AssertionError:
+        raise InvalidUsage.resource_not_found()
+    return data['status'], artpiece
+
 def create_artpiece(email, title, art, canvas_size):
     user = User.get_by_email(email) or User.from_email(email)
     if user.has_active_submission():
@@ -53,3 +67,10 @@ def confirm_artpiece(artpiece, token):
         artpiece.confirm()
 
     return status
+
+def validate_and_extract_color_data(json_data, update=False):
+    try:
+        data = ColorSchema(many=True).load(json_data, partial=update)
+    except ValidationError as err:
+        raise InvalidUsage.from_validation_error(err)
+    return data

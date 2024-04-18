@@ -110,13 +110,48 @@ app.model = function() {
 		return that;
 	}
 
+	function Location(){
+		let that = {};
+		const available = [];
+		const selected = {};
+
+		that.select = function(selected_location) {
+			if(selected_location == "All"){
+				delete selected.location;
+			} else {
+				selected["location"] = selected_location;
+			}
+		}
+
+		that.load = function(location_data) {
+			for (var i = 0; i < location_data.length; i++){
+				item = location_data[i];
+				available.push(item.name)
+			}
+			if(location_data.length > 0){
+				selected["location"] = location_data[0].name;
+			}
+		}
+
+		that.available = available;
+
+		that.selected = selected;
+
+		return that;
+	}
+
 	let canvas = Canvas();
+	let location = Location();
 
 	that.canvas = {
 		meta: {
 			get: function() {
+				request_url = 'artpieces';
+				if(location.selected["location"] && location.selected["location"]!='ALL'){
+					request_url = request_url + '?location=' + location.selected["location"];
+				}
 				$.ajax({
-					url: 'artpieces'
+					url: request_url
 					, type: 'GET'
 					, dataType: 'json'
 				})
@@ -186,6 +221,44 @@ app.model = function() {
 			return canvas.isEmpty();
 		}
 	};
+
+	that.location = {
+		get_available: function() {
+			$.ajax({
+				url: 'locations'
+				, type: 'GET'
+				, dataType: 'json'
+				, cache: 'false'
+			})
+			.done(function(data, textStatus, jqXHR) {
+				location.load(JSON.parse(data.data));
+				let location_data = location.available
+				subject.notifyObservers({
+					type: 'LOCATION_DATA'
+					, error: false
+					, payload: {
+						location_data
+					}
+				});
+				that.canvas.meta.get();
+			})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				if(jqXHR.status==401){
+					subject.notifyObservers({
+						type: 'LOGIN_REQUIRED'
+					})
+				};
+				if(jqXHR.status==403){
+					subject.notifyObservers({
+						type: 'NOT_AUTHORIZED'
+					})
+				};
+			});
+		},
+		select: function(selected) {
+			location.select(selected);
+		}
+	}
 
 	that.register = function(...args) {
 		args.forEach(elem => {

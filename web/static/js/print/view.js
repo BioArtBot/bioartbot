@@ -8,6 +8,9 @@ app.view = function($, model) {
 		, submissionModal: $('#submission-modal')
 		, submissionBox: $('#submission-block')
 		, submissionModalBtn: $('#submit-show')
+		, labwareSelector: $('.print-submit>#select-labware')
+		, pipetteSelector: $('.print-submit>#select-pipette')
+		, locationSelector: $('#select-location')
 		, printSubmit: $('.print-submit>.submit-button')
 		, jobBoard: $('.job-board')
 		, jobHeader: $('.job-header')
@@ -27,7 +30,6 @@ app.view = function($, model) {
 
 	const columnDisplay = { //using arrow functions for readability
 		'img_uri': (val) => '<img class="job-data" src=' + val + '>'
-		,'status': (val) => val.split("SubmissionStatus.")[1]
 		,'submit_date': (val) => val.split("T")[0] + "<br>" + val.split("T")[1].split(".")[0]
 	}
 
@@ -60,7 +62,8 @@ app.view = function($, model) {
 		that.jobs = jobs;
 
 		that.add = function(job) {
-			let tr = '<tr class="job-data" id=ID' + job['id'] + '>';	
+			status_class = 'status-' + job['status'];
+			let tr = '<tr class="job-data ' + status_class + '" id=ID' + job['id'] + '>';	
 			for (const key in job) {
 				content = (columnDisplay[key] || function(x){return x;})(job[key]);
 				cell_html = make_element('td', content, 'job-data');
@@ -83,7 +86,6 @@ app.view = function($, model) {
 		};
 
 		that.unhover = function(job) { //not implemented
-			console.log(job);
 			job.css('border', "silver 1px dotted;");
 		};
 
@@ -132,6 +134,77 @@ app.view = function($, model) {
 
 		return that;
 	}(DOM.jobBoard);
+
+	that.labwareSelector = function(labwareSelector) {
+		let that = {};
+
+		that.addOption = function(option) {
+			labwareSelector.append(`<option id=ID${option}>${option}</option>`)
+		}
+
+		that.getValue = function() {
+			return labwareSelector[0].value;
+		}
+
+		that.register = {
+			onChange: function(handler) {
+				labwareSelector.on('change', function(event) {
+					handler();
+				});
+			}
+		}
+		
+		return that;
+	}(DOM.labwareSelector)
+
+
+	that.pipetteSelector = function(pipetteSelector) {
+		let that = {};
+
+		that.addOption = function(option) {
+			pipetteSelector.append(`<option id=ID${option}>${option}</option>`)
+		}
+
+		that.getValue = function() {
+			return pipetteSelector[0].value;
+		}
+
+		that.register = {
+			onChange: function(handler) {
+				pipetteSelector.on('change', function(event) {
+					handler();
+				});
+			}
+		}
+		
+		return that;
+	}(DOM.pipetteSelector)
+
+
+	that.locationSelector = function(locationSelector) {
+		let that = {};
+
+		that.addOption = function(option) {
+			let display;
+			if(option=='ALL'){display='All Locations'; option='ALL';}else{display=option}
+			locationSelector.append(`<option id=ID_${option} value=${option}>${display}</option>`)
+		}
+
+		that.getValue = function() {
+			return locationSelector[0].value;
+		}
+
+		that.register = {
+			onChange: function(handler) {
+				locationSelector.on('change', function(event) {
+					handler();
+				});
+			}
+		}
+		
+		return that;
+	}(DOM.locationSelector)
+
 
 	that.selectedJobList = function(selectedJobList, selectedJobsPlaceholder) {
 		let that = {};

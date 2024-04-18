@@ -1,12 +1,12 @@
 from datetime import datetime
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_current_user
 from flask import (Blueprint, request, current_app, jsonify, send_file)
 from flask_jwt_extended import (
         create_access_token, create_refresh_token
         , set_access_cookies, set_refresh_cookies
     )
 from .core import (create_superuser, delete_superuser, validate_and_extract_user_data,
-                   update_superuser_role, update_superuser_password
+                   update_superuser_role, update_superuser_password, read_superusers
                   )
 from .exceptions import InvalidUsage, error_template
 from .user import SuperUser
@@ -38,10 +38,31 @@ def login():
 
     # Set the JWTs and the CSRF double submit protection cookies
     # in this response
-    resp = jsonify({'login': True, 'user':user.email})
+    resp = jsonify({'login': True, 'user':user.email, 'role':user.role.value})
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
 
+    return resp, 200
+
+
+@user_blueprint.route('/get', methods=('GET', ))
+@jwt_required()
+@access_level_required(SuperUserRole.printer)
+def get_all():
+    """
+    Reads all superusers from the database.
+
+    Parameters:
+        none
+
+    Returns:
+        json:
+            users <JSON>: A list of all superusers, with the following schema
+                {user_id: <int>, email: <str>, role: <int>, created_at: <timestamp>}
+            count <int>: The number of users returned from the database.
+    """
+    users = read_superusers()
+    resp = jsonify({'users': users, 'count': len(users)})
     return resp, 200
 
 
@@ -49,6 +70,18 @@ def login():
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
 def remove(id, created_at_timestamp):
+    """
+    Removes the superuser with the given id. Request must also send the superuser's 
+    created_at_timestamp, as a check to prevent accidental deletion.
+    Parameters are part of the URL, not a JSON object.
+
+    Parameters:
+        id (int): The id of the superuser to be removed.
+        created_at_timestamp (timestamp): The created_at_timestamp of the superuser to be removed.
+
+    Returns:
+        json: A json object confirming the superuser's email, and a success boolean.
+    """
     email, success = delete_superuser(id, created_at_timestamp)
     resp = jsonify({'user': email, 'deleted': success})
     return resp, 200
@@ -58,7 +91,20 @@ def remove(id, created_at_timestamp):
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
 def create():
-    data = validate_and_extract_user_data(request.json, new_user=True)
+    """
+    Creates a new superuser from data provided in a JSON object.
+
+    Parameters:
+        json:
+            email (str): The email of the superuser to be created.
+            password (str): The password of the superuser to be created.
+            role (str): The role of the superuser to be created (admin or printer).
+
+    Returns:
+        json: A json object giving the superuser's assigned id, and a success boolean.
+    """
+    requesting_user = get_current_user()
+    data = validate_and_extract_user_data(request.json, requesting_user, new_user=True)
     email, password, role = data['email'], data['password'], data['role']
 
     id, success = create_superuser(email, password, role)
@@ -71,21 +117,57 @@ def create():
 @jwt_required()
 @access_level_required(SuperUserRole.admin)
 def update_role():
-    data = validate_and_extract_user_data(request.json, skipped_fields=('password',))
+    """
+    Updates a superuser's role from data provided in a JSON object.
+
+    Parameters:
+        json:
+            email (str): The email of the superuser to be updated.
+            role (str): The new role of the superuser (admin or printer).
+
+    Returns:
+        json: A json object confirming the superuser's email,
+              the old and new roles, and a success boolean.
+    """
+    requesting_user = get_current_user()
+    data = validate_and_extract_user_data(request.json, requesting_user, skipped_fields=('password',))
     email, requested_role = data['email'], data['role']
 
-    email, old_role, new_role = update_superuser_role(email, requested_role)
+    email, old_role, new_role = update_superuser_role(email, requested_role, get_current_user())
     resp = jsonify({'user': email, 'old_role': old_role, 'new_role': new_role})
     return resp, 200
 
-
-@user_blueprint.route('/reset_password/<created_at_timestamp>', methods=('POST', ))
+@user_blueprint.route('/reset_password/', methods=('POST', ))
 @jwt_required()
-@access_level_required(SuperUserRole.admin)
-def reset_password(created_at_timestamp):
-    data = validate_and_extract_user_data(request.json, skipped_fields=('role',))
-    email, requested_password = data['email'], data['password']
+@access_level_required(SuperUserRole.printer)
+def reset_password():
+    """
+    Updates a superuser's password from data provided in a JSON object.
+    If the requesting superuser is not an admin, must send the current
+    password in addition to the requested new password. Admins may change
+    any other superuser's password.
+    This endpoint is intended to be reached by a password reset screen accessed by
+    the superuser themselves, or by an admin working through a dashboard.
 
-    email, success = update_superuser_password(email, requested_password, created_at_timestamp)
-    resp = jsonify({'user': email, 'success': success})
+    Parameters:
+        json:
+            email (str): The email of the superuser to be updated.
+            new_password (str): The new password of the superuser.
+            password (str): The current password of the superuser. Optional if the
+                user sending the request is an admin.
+
+    Returns:
+        json: A json object confirming the superuser's email, and a success boolean.
+    """
+    requesting_user = get_current_user()
+    data = validate_and_extract_user_data(request.json, requesting_user, skipped_fields=('role',))
+    old_password = data.get('password') #Could be None, if admin is requesting
+    email, requested_password = data['email'], data['new_password']
+
+    email, success = update_superuser_password(email, old_password, requested_password, get_current_user())
+    warnings = []
+    if not old_password: warnings.append(
+        'WARNING: A future version of this endpoint will require a current password, even for Admins'
+        )
+    resp = jsonify({'user': email, 'success': success, 'warnings': warnings})
     return resp, 200

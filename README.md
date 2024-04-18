@@ -1,4 +1,4 @@
-http://www.bioartbot.org/
+https://www.bioartbot.org/
 
 # BioArtBot Robotic Artist from Counter Culture Labs
 This project provides an interface for users to draw and submit pixel art via a web app, and then converts that submission into instructions for an [Opentrons OT2 robot](https://www.opentrons.com) to reproduce that drawing by distributing colorful micobes onto an agar plate. As the microbes grow, the picture comes into focus, resulting in living art. It's very neat.
@@ -80,12 +80,28 @@ If the pipette tip misses your agar, it's easiest to troubleshoot using the [Jup
 
 ### Materials:
 - Opentrons OT2 Liquid Handling Robot
-- 6-well 15mL tissue culture plates for liquid culture 'palette'
+- 2ml deepwell plates, or cryo tubes with cryo tube holder for liquid culture 'palette'
 - Omni-tray plates for canvases - one per artpiece
-- Standard 200ul tiprack
+- Standard 20ul tiprack
 
 ### Procedure in brief:
 - In a sterile environment:
 	- Pour LB agar with into omni-tray plates
-	- Transfer 5-10 mL of liquid color-producing e. coli culture into a 6-well plate
+	- Transfer ~1 mL of liquid color-producing e. coli culture into a deepwell plate
 - Follow instructions in OT app upon upload of procedure
+
+## Permissions
+Copyright (C) 2023, Tim Dobbs
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.

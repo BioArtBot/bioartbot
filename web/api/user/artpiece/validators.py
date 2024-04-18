@@ -2,7 +2,7 @@ import re
 from .exceptions import (PixelOutOfBoundsException, ColorSchemeException, BlankCanvasException,
         InvalidTitleException, InvalidCanvasException)
 
-MAX_CANVAS_SIZE = 100
+MAX_CANVAS_SIZE = 400
 
 def validate_art_content_length(art):
     def has_content(art):

@@ -8,7 +8,7 @@ app.init = function() {
 	let presentation = this.presentation(view, model);
 
 	model.register(presentation);
-	model.canvas.meta.get();
+	model.location.get_available(); //colors loaded after location load
 };
 
 $(document).ready(function () {

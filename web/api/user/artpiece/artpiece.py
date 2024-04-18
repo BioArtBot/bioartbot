@@ -6,12 +6,16 @@ import datetime as dt
 import math
 import re
 import os
+from sqlalchemy import func
 from PIL import Image, ImageDraw
 from slugify import slugify
 from flask import current_app
 from flask_jwt_extended import create_access_token, decode_token
 from web.api.file_manager import file_manager
-from web.database.models import ArtpieceModel, SubmissionStatus
+from web.database.models import (ArtpieceModel, ColorBlockModel,
+                                 BacterialColorModel, StrainModel,
+                                 LocationModel, SubmissionStatus
+                                )
 from web.api.user.colors import get_available_color_mapping
 
 def _decode_to_image(pixel_art_color_encoding, color_mapping
@@ -47,6 +51,20 @@ def _create_unique_slug(title):
         postfix = int(m.group(0)) + 1
     return f'{slug}#{postfix}'
 
+def _make_color_blocks(art_json):
+    """
+    Breaks art in JSON format into individual ColorBlock objects,
+    which can each be stored in the database
+    """
+    color_blocks = list()
+    for color in art_json:
+        color_blocks.append(
+            ColorBlockModel(color_id=color, 
+                            coordinates=art_json[color]
+            )
+        )
+    return color_blocks
+
 
 _Model = ArtpieceModel
 _fm = file_manager()
@@ -65,26 +83,55 @@ class Artpiece():
         slug = _create_unique_slug(title)
         image_as_bytes = _decode_to_image(art, get_available_color_mapping(), canvas_size)
         image_uri = _fm.store_file(io.BytesIO(image_as_bytes), f'{slug}_{int(submit_date.timestamp()*1000)}.jpg')
+
+        color_blocks = _make_color_blocks(art)
         
         return cls(
-                _Model(slug=slug, title=title, submit_date=submit_date, art=art
+                _Model(slug=slug, title=title, submit_date=submit_date, color_blocks=color_blocks
                     , canvas_size=canvas_size, status=SubmissionStatus.submitted
                     , image_uri=image_uri, user_id=user_id, confirmed=False)
                 .save())
-
+    
     @classmethod
     def get_by_id(cls, id):
         model = _Model.get_by_id(id)
         return None if model is None else cls(_Model.get_by_id(id))
 
     @classmethod
-    def get_printable(cls):
-        model = (
-            _Model.query.filter(
-            ArtpieceModel.status == SubmissionStatus.submitted
-            , ArtpieceModel.confirmed == True)
+    def get_printable(cls, unprinted_only=False, confirmed_only=True, location=None):
+        statuses= [SubmissionStatus.submitted]
+        if not unprinted_only:
+            statuses += [SubmissionStatus.processing, SubmissionStatus.processed]
+        query_filter = (ArtpieceModel.status.in_(statuses),)
+        if confirmed_only: query_filter += (ArtpieceModel.confirmed == True,)
+        
+        query = _Model.query
+
+        if location: #show only art where all colors are available at this location
+            subquery = (
+                BacterialColorModel.query
+                .join(StrainModel)
+                .join(StrainModel.locations, )
+                .filter(LocationModel.name == location)
+                .subquery()
+            )
+            query = (
+                query
+                .join(ColorBlockModel)
+                .outerjoin(subquery, subquery.c.id == ColorBlockModel.color_id)
+                .group_by(_Model.id)
+                .having(func.count(_Model.id) == func.count(subquery.c.id))
+            )
+
+        query = (
+            query
+            .filter(*query_filter)
+            .order_by(ArtpieceModel.status.asc())
             .order_by(ArtpieceModel.submit_date.asc())
-            .all())
+            )
+        
+        model = query.all()
+        
         return model
 
     @property
@@ -120,6 +167,14 @@ class Artpiece():
 
     def is_confirmed(self):
         return self._model.confirmed
+
+    def update_status(self, status):
+        status_enum = SubmissionStatus[status]
+        return self._model.update(status=status_enum, commit=True)
+
+    def delete(self):
+        self._model.delete(commit=True)
+        return True
 
     @property
     def title(self):

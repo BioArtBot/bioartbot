@@ -8,6 +8,14 @@ tr.job-data {
     background-color: rgb(250, 250, 250);
 }
 
+tr.status-Submitted {
+    background-color: rgb(255, 255, 255);
+}
+
+tr.status-Processed {
+    background-color: rgb(200, 200, 200);
+}
+
 td.job-data {
     width: 200px;
 }
@@ -32,6 +40,10 @@ img.job-data {
 .list-label {
     font-size: large;
     font-weight: bold;
+}
+
+.selector-label {
+    text-align: left;
 }
 
 #output-messages {

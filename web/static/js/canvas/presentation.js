@@ -191,6 +191,21 @@ app.presentation = function(view, model) {
 		return colormap;
 	}
 
+	view.locationSelector.register.onChange(function() {
+		let location = view.locationSelector.getValue();
+		view.colorPicker.clear();
+		model.location.select(location);
+		model.canvas.meta.get();
+		model.canvas.reset();
+		view.canvas.reset();
+	});
+
+	function populateLocationOptions(locations) {
+		for (let i=0; i!=locations.length; ++i) {
+			view.locationSelector.addOption(locations[i]);
+		}
+	}
+
 	function errorsToMessage(errors) {
 		let errorMessage = defaultErrorMessage;
 		for (let i=0; i!=errors.length; ++i) {
@@ -218,6 +233,9 @@ app.presentation = function(view, model) {
 				view.successModal.show();
 			}
 			view.submit.enable();
+		}
+		, 'LOCATION_DATA': function(action) {
+			populateLocationOptions(action.payload.location_data)
 		}
 	};
 

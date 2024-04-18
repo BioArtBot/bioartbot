@@ -21,7 +21,6 @@
 				<strong>fill</strong>
 			</button>
 			<br>
-
 			<hr>
 			<p><strong>Mode</strong><p>
 			<div class="btn-group" role="group" label="Draw mode">
@@ -33,6 +32,19 @@
 					title="or double-click to erase">
 					<i class="fas fa-eraser"></i>
 				</button>
+			</div>
+			<br>
+			<hr>
+			<div>
+				<p data-toggle="tooltip" data-placement="bottom" 
+				title="Different labs may print your art. If you pick a lab, we'll only show you colors that
+				can be printed at that lab.">
+					<strong>Color Set</strong>
+				</p>
+			</div>
+			<div>
+				<select id="select-location" class="dropdown">
+				</select>
 			</div>
 			<br>
 			<button type="submit" id="submit-show" 
@@ -76,9 +88,14 @@
 			</form>
 		</div>
 		<div class="info-block p-3 mt-3 text-center">
-			<p><strong>Donate!</strong><p>
-			<p><em>Please donate. It costs money to produce the art and your donation helps Counter Culture Labs continue!</em></p>
+			<p><em>If you like the project, please consider donating to support
+				our originating lab, <a href="https://www.counterculturelabs.org">Counter Culture Labs</a>.</em></p>
 			{% include 'paypal_form.html' %}
+			<p><em>All donations go directly to CCL to help them build community programs.
+				<br>
+				CCL is a registered 501(c)(3) non-profit organization.
+			</em></p>
+			
 		</div>
 	</div>
 </div>

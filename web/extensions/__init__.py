@@ -5,6 +5,9 @@ from flask_sqlalchemy import SQLAlchemy, Model
 from flask_mail import Mail
 from flask_caching import Cache
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS
+from flask_talisman import Talisman
+from web.settings import Config
 from .argon2_config import Argon2
 from .jwt_config import user_lookup_callback
 
@@ -43,5 +46,7 @@ mail = Mail()
 cache = Cache()
 jwt = JWTManager()
 argon2 = Argon2()
+cors = CORS()
+talisman = Talisman()
 
 jwt.user_lookup_loader(user_lookup_callback)

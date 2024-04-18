@@ -41,7 +41,7 @@ def send_confirmation_email(artpiece, confirmation_url):
                 , text_body=render_template(
                     'email/submission_confirmation.txt', confirmation_url=confirmation_url)
                 , html_body=render_template(
-                    'email/submission_confirmation.html'
+                    'email/general_submission_confirmation.html'
                     , submission=artpiece
                     , confirmation_url=confirmation_url
                     )
