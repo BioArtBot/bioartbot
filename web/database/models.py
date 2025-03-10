@@ -216,6 +216,7 @@ class StrainModel(SurrogatePK, Model):
     name = Column(db.String(50), unique=True, nullable=False)
     friendly_name = Column(db.String(50), nullable=False)
     description = Column(db.String(500), nullable=False)
+    short_description = Column(db.String(280), nullable=False)
     background_strain = Column(db.String(30), nullable=False)
     status = Column(
             db.Enum(SubmissionStatus, values_callable=lambda x: [e.value for e in x])
