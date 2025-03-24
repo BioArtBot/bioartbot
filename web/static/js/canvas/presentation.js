@@ -186,7 +186,7 @@ app.presentation = function(view, model) {
 		let colormap = {};
 		for (let i=0; i != colors.length; ++i) {
 			let color = colors[i];
-			colormap[color.id] = {name: color.name, rgba: 'rgba('+color.rgba.join()+')'};
+			colormap[color.id] = {name: color.name, rgba: 'rgba('+color.rgba.join()+')', description: color.description};
 		}
 		return colormap;
 	}
@@ -222,7 +222,7 @@ app.presentation = function(view, model) {
 		'CANVAS_META': function(action) {
 			colormap = createColorMap(action.payload.colors);
 			for (id in colormap) {
-				view.colorPicker.add(id, colormap[id].rgba);
+				view.colorPicker.add(id, colormap[id].rgba, colormap[id].description);
 			}
 		}
 		, 'CANVAS_SUBMIT': function(action) {

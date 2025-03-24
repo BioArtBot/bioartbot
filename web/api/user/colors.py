@@ -10,13 +10,13 @@ from ..biofoundry.exceptions import (DataSyntaxError, DBError)
 BacterialColor = BacterialColorModel
 
 def get_available_colors(location=None):
-    query = BacterialColor.query.filter(BacterialColor.in_use == True)
+    query = BacterialColor.query.filter(BacterialColor.in_use == True) #test
     if location:
         query = query.join(StrainModel).join(StrainModel.locations).filter(LocationModel.name == location)
     return query.all()
 
 def get_available_colors_as_dicts(location=None):
-    return [{'id': color.id, 'name': color.name, 'rgba': color.rgba} for color in
+    return [{'id': color.id, 'name': color.name, 'rgba': color.rgba, 'description': color.strain.short_description or f'{color.name} strain'} for color in
             get_available_colors(location)]
 
 def get_all_colors():
