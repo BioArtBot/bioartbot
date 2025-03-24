@@ -121,12 +121,15 @@ app.view = function($, model) {
 				.addClass('selected-color');
 		};
 
-		that.add = function(id, color) {
+		that.add = function(id, color, description) {
 			colorPicker.append(
 				'<div class="color-picker rounded-circle" data-color-id="'
 				+id
-				+'" style="background:'+color+';"></div>'
+				+'" style="background:'+color+'"; data-toggle="tooltip" data-placement="bottom" title="'
+				+description + '">'
+				+'</div>'
 			);
+			$('[data-toggle="tooltip"]').tooltip(); //Have reinitialize this, because it loads after the main document.
 		};
 
 		that.clear = function() {
