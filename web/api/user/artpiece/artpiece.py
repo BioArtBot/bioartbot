@@ -41,15 +41,19 @@ def _decode_to_image(pixel_art_color_encoding, color_mapping
 def _create_unique_slug(title):
     slug = slugify(title)
     search = f'{slug}#%'
-    artpiece_with_slug = (ArtpieceModel.query.filter(
-            ArtpieceModel.slug.like(search))
-            .order_by(ArtpieceModel.submit_date.desc())
-            .first())
-    postfix = 1
-    if artpiece_with_slug is not None:
-        m = re.search(r'\d$', artpiece_with_slug.slug)
-        postfix = int(m.group(0)) + 1
-    return f'{slug}#{postfix}'
+    existing_slugs = [row[0] for row in (ArtpieceModel.query
+            .with_entities(ArtpieceModel.slug)
+            .filter(ArtpieceModel.slug.like(search))
+            .all())]
+    #the postfix must be parsed in full: taking only the last digit of the newest
+    #slug wraps around at 10 (test#10 -> test#1) and collides with an existing slug
+    postfix_pattern = re.compile(f'^{re.escape(slug)}#(\\d+)$')
+    highest_postfix = 0
+    for existing in existing_slugs:
+        m = postfix_pattern.match(existing)
+        if m is not None:
+            highest_postfix = max(highest_postfix, int(m.group(1)))
+    return f'{slug}#{highest_postfix + 1}'
 
 def _make_color_blocks(art_json):
     """
