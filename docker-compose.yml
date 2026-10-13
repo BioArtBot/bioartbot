@@ -45,7 +45,11 @@ services:
 
 
     localstack:
-        image: localstack/localstack
+        # Pinned on purpose: since LocalStack for AWS 2026.03 the community/pro
+        # images were merged and a LOCALSTACK_AUTH_TOKEN is mandatory, so the
+        # container exits immediately with code 55 ("License activation failed").
+        # 4.14.0 is the last release that runs without a license token.
+        image: localstack/localstack:4.14.0
         ports:
             - 4566:4566
         environment:
@@ -54,10 +58,10 @@ services:
             - AWS_SECRET_ACCESS_KEY=TEMP
             - SERVICES=s3
             - DEBUG=1
-            - DATA_DIR=/var/lib/localstack/data
+            - PERSISTENCE=1
         volumes:
             - "./.localstack:/var/lib/localstack"
-            - "./dev_deploy:/docker-entrypoint-initaws.d" #Runs startup scripts
+            - "./dev_deploy:/etc/localstack/init/ready.d" #Runs startup scripts
 
     maildev:
         image: djfarrelly/maildev

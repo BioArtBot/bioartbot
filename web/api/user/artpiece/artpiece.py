@@ -152,13 +152,15 @@ class Artpiece():
         return loc
 
     def get_confirmation_token(self, expires_in=60*60*72):
+        # PyJWT >= 2.10 requires the JWT "sub" claim to be a string, so the
+        # confirmation payload is serialized as JSON and parsed back on decode.
         return create_access_token(
-                identity = {'confirm_artpiece': self._model.id, 'exp': time() + expires_in},
+                identity = json.dumps({'confirm_artpiece': self._model.id, 'exp': time() + expires_in}),
                 expires_delta = dt.timedelta(seconds = expires_in)
                 )
 
     def verify_confirmation_token(self, token):
-        id = decode_token(token, allow_expired=False)['sub']['confirm_artpiece']
+        id = json.loads(decode_token(token, allow_expired=False)['sub'])['confirm_artpiece']
         if self._model_id != id:
             raise TokenIDMismatchError()
 
