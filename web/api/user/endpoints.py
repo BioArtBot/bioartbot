@@ -33,8 +33,8 @@ def login():
         user.set_password(password)
 
     # Create the tokens we will be sending back to the user
-    access_token = create_access_token(identity=user.id)
-    refresh_token = create_refresh_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id))
+    refresh_token = create_refresh_token(identity=str(user.id))
 
     # Set the JWTs and the CSRF double submit protection cookies
     # in this response
