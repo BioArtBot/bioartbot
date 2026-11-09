@@ -51,7 +51,12 @@ td {
 .pixel-canvas {
 	background-color : white;
 	width: 390px;
-	height: 260px;
+	height: 390px;
+}
+
+/* Landscape canvases are 3:2 ratio*/
+.pixel-canvas.landscape-canvas {
+	height: calc(390px * 2 / 3);
 }
 
 #sidebar-left {
@@ -105,14 +110,11 @@ td {
 		width: 520px;
 		height: 520px;
 	}
+	.pixel-canvas.landscape-canvas {
+		height: calc(520px * 2 / 3);
+	}
 	.canvas-container {
 		max-width: 72vw;
-	}
-}
-
-@media screen and (min-width: 992px) {
-	.canvas-container {
-		max-width: 65vw;
 	}
 }
 
@@ -120,6 +122,9 @@ td {
 	.pixel-canvas {
 		width: 650px;
 		height: 650px;
+	}
+	.pixel-canvas.landscape-canvas {
+		height: calc(650px * 2 / 3);
 	}
 	#sidebar-left {
 		max-width: 350px;
@@ -138,6 +143,18 @@ td {
 	}
 	.canvas-container {
 		max-width: 60vw;
+	}
+}
+
+@media screen and (min-width: 992px) {
+	/*In large windows, expand landscape outwards instead of maintaining width and shrinking height*/
+	.pixel-canvas.landscape-canvas {
+		height: 650px;
+		width: calc(650px * 3 / 2);
+	}
+
+	.canvas-container {
+		max-width: 65vw;
 	}
 }
 
@@ -188,7 +205,7 @@ hr.section-break:before {
 }
 
 /* Styles buttons, including a change of displayed mouse cursor to inform user he/she is hovering over something clickable */
-.submit-button, .quick-fill, .erase-mode, .draw-mode, .submit-input, .dropdown {
+.submit-button, .quick-fill, .erase-mode, .draw-mode, .canvas-shape, .submit-input, .dropdown {
 	box-shadow: inset 0px 1px 0 0 #fff;
 	background: linear-gradient(#f9f9f9 5%, #e9e9e9 100%);
 	/* creates rounded edges (more pixels -> more rounded) */
@@ -198,6 +215,18 @@ hr.section-break:before {
 	text-decoration: none;
 	/* text-shadow: 0 1px #fff; */
 	cursor: pointer;
+}
+
+/* Canvas-shape glyph: a minimal outline of the shape, proportioned from the ratio
+   the backend supplies (x / y), so adding a shape needs no new front-end code. */
+.shape-glyph {
+	display: inline-block;
+	box-sizing: border-box;
+	vertical-align: middle;
+	border: 1px solid currentColor;
+	width: 1.05em;
+	height: 1.05em; /*fallback for browsers without CSS custom properties*/
+	height: calc(1.05em / var(--shape-ratio, 1));
 }
 
 .submit-button:disabled {

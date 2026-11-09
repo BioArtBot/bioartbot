@@ -217,6 +217,10 @@ app.model = function() {
 		, reset: function() {
 			canvas.reset();
 		}
+		, resize: function(size) {
+			// Any art on the canvas is discarded by the resize.
+			canvas = Canvas(size);
+		}
 		, isEmpty: function() {
 			return canvas.isEmpty();
 		}

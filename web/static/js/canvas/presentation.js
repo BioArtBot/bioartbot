@@ -116,6 +116,23 @@ app.presentation = function(view, model) {
 		view.eraseMode.select();
 	});
 
+	let selectedCanvasShape = view.canvasShape.selected();
+
+	// Changing shape redraws a blank grid, so all art is lost.
+	function selectCanvasShape(shape) {
+		if (shape == selectedCanvasShape) { return; }
+		let size = view.canvasShape.getSize(shape);
+		view.canvasShape.unselect(selectedCanvasShape);
+		view.canvasShape.select(shape);
+		selectedCanvasShape = shape;
+		view.canvas.redraw(size, shape);
+		model.canvas.resize(size);
+	}
+
+	view.canvasShape.register.onClick(function(shape) {
+		selectCanvasShape(shape);
+	});
+
 	function isSpace(c) {
 		return /[\s]/.test(c);
 	}

@@ -12,6 +12,7 @@ app.view = function($, model) {
 		, colorContainer: $('#color-container')
 		, drawMode: $('#draw')
 		, eraseMode: $('.erase-mode')
+		, canvasShapes: $('.canvas-shape')
 		, titleInput: $('input#title')
 		, emailInput: $('input#email')
 		, drawSubmit: $('.draw-submit>.submit-button')
@@ -30,7 +31,31 @@ app.view = function($, model) {
 
 	that.canvas = function(canvas) {
 		let that = {};
-		const pixels = canvas.find('td');
+		let pixels = canvas.find('td');
+		let shapeClass = null;
+
+		function buildGrid(size) {
+			let grid = '<tbody>';
+			for (let y = 0; y != size.y; ++y) {
+				grid += '<tr id="Y'+y+'">';
+				for (let x = 0; x != size.x; ++x) {
+					grid += '<td id="X'+x+'"></td>';
+				}
+				grid += '</tr>';
+			}
+			return grid+'</tbody>';
+		}
+
+		// Rebuilds the grid from scratch, discarding anything drawn on it.
+		that.redraw = function(size, shape) {
+			if (shapeClass) {
+				canvas.removeClass(shapeClass);
+			}
+			shapeClass = shape+'-canvas';
+			canvas.addClass(shapeClass);
+			canvas.html(buildGrid(size));
+			pixels = canvas.find('td');
+		};
 
 		that.fill = function(color) {
 			pixels.css('background-color', color || "");
@@ -189,6 +214,51 @@ app.view = function($, model) {
 		};
 		return that;
 	}(DOM.eraseMode);
+
+	that.canvasShape = function(shapeButtons) {
+		let that = {};
+		const shapes = {};
+
+		shapeButtons.each(function() {
+			let button = $(this);
+			shapes[button.data('canvas-shape')] = {
+				node: button
+				, size: {
+					x: parseInt(button.data('canvas-x'))
+					, y: parseInt(button.data('canvas-y'))
+				}
+			};
+		});
+
+		that.getSize = function(shape) {
+			return shapes[shape].size;
+		};
+		that.select = function(shape) {
+			shapes[shape].node.addClass('selected-mode');
+		};
+		that.unselect = function(shape) {
+			shapes[shape].node.removeClass('selected-mode');
+		};
+		that.selected = function() {
+			for (let shape in shapes) {
+				if (shapes[shape].node.hasClass('selected-mode')) {
+					return shape;
+				}
+			}
+			return null;
+		};
+		that.register = {
+			onClick: function(handler) {
+				shapeButtons.on('click', function(event) {
+					event.preventDefault();
+					let button = $(this);
+					button.blur();
+					handler(button.data('canvas-shape'));
+				});
+			}
+		};
+		return that;
+	}(DOM.canvasShapes);
 
 	that.locationSelector = function(locationSelector) {
 		let that = {};
