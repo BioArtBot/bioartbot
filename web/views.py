@@ -9,14 +9,21 @@ from .settings import ANNOUNCEMENT, Config
 
 main = Blueprint('main', __name__)
 
-DEFAULT_CANVAS = {'x':26, 'y':26}
+# Shapes a user can draw on. The first entry is the default.
+# 'label' is the shape's accessible name (aria-label) and tooltip text: the shape
+# buttons display a glyph that the front end derives from 'size'
+CANVAS_SHAPES = (
+        {'name': 'square', 'label': 'Square', 'size': {'x':26, 'y':26}}
+        , {'name': 'landscape', 'label': 'Landscape', 'size': {'x':39, 'y':26}}
+        )
 
 #Home page
 @main.route('/', methods=('GET', ))
 @main.route('/index', methods=('GET', ))
 @cache.cached(timeout=60)
 def index():
-    return render_template('main.html', canvas_size=DEFAULT_CANVAS, announcement=ANNOUNCEMENT, home_tag=' active', about_tag='')
+    return render_template('main.html', canvas_size=CANVAS_SHAPES[0]['size'], canvas_shapes=CANVAS_SHAPES
+            , announcement=ANNOUNCEMENT, home_tag=' active', about_tag='')
 
 @main.route('/gallery',methods=('GET',))
 @cache.cached(timeout=60)

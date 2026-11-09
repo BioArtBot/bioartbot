@@ -36,6 +36,27 @@
 			<br>
 			<hr>
 			<div>
+				<p data-toggle="tooltip" data-placement="bottom">
+					<strong>Canvas Shape</strong>
+				</p>
+			</div>
+			<div class="btn-group" role="group" label="Canvas shape">
+				{% for shape in canvas_shapes %}
+				<button type="button"
+					class="btn btn-light btn-sm canvas-shape {{ shape.name }}-shape{{ ' selected-mode' if loop.first }}"
+					data-canvas-shape="{{ shape.name }}"
+					data-canvas-x="{{ shape.size['x'] }}" data-canvas-y="{{ shape.size['y'] }}"
+					style="--shape-ratio: {{ '%.4f'|format(shape.size['x'] / shape.size['y']) }}"
+					aria-label="{{ shape.label }}"
+					data-toggle="tooltip" data-placement="bottom"
+					title="{{shape.label}} ({{ shape.size['x'] }} x {{ shape.size['y'] }} grid)">
+					<span class="shape-glyph" aria-hidden="true"></span>
+				</button>
+				{% endfor %}
+			</div>
+			<br>
+			<hr>
+			<div>
 				<p data-toggle="tooltip" data-placement="bottom" 
 				title="Different labs may print your art. If you pick a lab, we'll only show you colors that
 				can be printed at that lab.">
