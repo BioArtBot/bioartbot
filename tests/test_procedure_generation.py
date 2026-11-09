@@ -36,24 +36,6 @@ def art_dimensions(canvas_object_in_db, art_from_test_db):
     all_plate_positions = list()
     all_pixels = list()
 
-       #DEBUG
-    print(grid_size)
-    if canvas.shape == 'round': #inscribe in circle
-        aspect_ratio = grid_size['x'] / grid_size['y']
-
-        angle = math.atan(aspect_ratio)
-        x_max_mm = math.sin(angle) * canvas.x_radius_mm
-        y_max_mm = math.cos(angle) * canvas.y_radius_mm
-
-        wellspacing = x_max_mm * 2 / grid_size['x'] #x and y are identical
-    else:
-        x_wellspacing = canvas.x_radius_mm * 2 / grid_size['x']
-        y_wellspacing = canvas.y_radius_mm * 2 / grid_size['y']
-        wellspacing = min(x_wellspacing, y_wellspacing)
-    well_radius = min(canvas.x_radius_mm, canvas.y_radius_mm)
-    print(wellspacing/well_radius)
-    #END DEBUG
-
     for color in artpiece.color_blocks:
         for pixel in color.coordinates:
             well_radius, wellspacing, x_max_mm, y_max_mm = get_spacing(canvas, grid_size)
