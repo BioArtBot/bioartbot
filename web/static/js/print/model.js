@@ -152,6 +152,33 @@ app.model = function() {
 	}
 
 
+	function Palette(){
+		let that = {};
+		const available = [];
+		const selected = {};
+
+		that.select = function(selected_palette) {
+			selected["main"] = selected_palette;
+		}
+
+		that.load = function(palette_data) {
+			for (var i = 0; i < palette_data.length; i++){
+				item = palette_data[i];
+				available.push(item.name)
+			}
+			if(palette_data.length > 0){
+				that.select(palette_data[0].name)
+			}
+		}
+
+		that.available = available;
+
+		that.selected = selected;
+
+		return that;
+	}
+
+
 	function Location(){
 		let that = {};
 		const available = ["ALL"];
@@ -184,6 +211,7 @@ app.model = function() {
 	let user = User();
 	let labware = Labware();
 	let pipette = Pipette();
+	let palette = Palette();
 	let location = Location();
 
 	that.labware = {
@@ -257,6 +285,43 @@ app.model = function() {
 		},
 		select: function(selected) {
 			pipette.select(selected);
+		}
+	}
+
+	that.palette = {
+		get_available: function() {
+			$.ajax({
+				url: 'available_palettes'
+				, type: 'GET'
+				, dataType: 'json'
+				, cache: 'false'
+			})
+			.done(function(data, textStatus, jqXHR) {
+				palette.load(JSON.parse(data.data));
+				let palette_data = palette.available
+				subject.notifyObservers({
+					type: 'PALETTE_DATA'
+					, error: false
+					, payload: {
+						palette_data
+					}
+				});
+			})
+			.fail(function(jqXHR, textStatus, errorThrown) {
+				if(jqXHR.status==401){
+					subject.notifyObservers({
+						type: 'LOGIN_REQUIRED'
+					})
+				};
+				if(jqXHR.status==403){
+					subject.notifyObservers({
+						type: 'NOT_AUTHORIZED'
+					})
+				};
+			});
+		},
+		select: function(selected) {
+			palette.select(selected);
 		}
 	}
 
@@ -361,6 +426,7 @@ app.model = function() {
 				, data: JSON.stringify({
 					'ids': jobs.selected,
 					'labware': labware.selected,
+					'palette': palette.selected["main"],
 					'pipette': pipette.selected["main"],
 					'location': location.selected["location"]
 				})

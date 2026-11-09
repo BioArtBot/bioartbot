@@ -9,6 +9,7 @@ app.view = function($, model) {
 		, submissionBox: $('#submission-block')
 		, submissionModalBtn: $('#submit-show')
 		, labwareSelector: $('.print-submit>#select-labware')
+		, paletteSelector: $('.print-submit>#select-palette')
 		, pipetteSelector: $('.print-submit>#select-pipette')
 		, locationSelector: $('#select-location')
 		, printSubmit: $('.print-submit>.submit-button')
@@ -156,6 +157,29 @@ app.view = function($, model) {
 		
 		return that;
 	}(DOM.labwareSelector)
+
+
+	that.paletteSelector = function(paletteSelector) {
+		let that = {};
+
+		that.addOption = function(option) {
+			paletteSelector.append(`<option id=ID${option}>${option}</option>`)
+		}
+
+		that.getValue = function() {
+			return paletteSelector[0].value;
+		}
+
+		that.register = {
+			onChange: function(handler) {
+				paletteSelector.on('change', function(event) {
+					handler();
+				});
+			}
+		}
+		
+		return that;
+	}(DOM.paletteSelector)
 
 
 	that.pipetteSelector = function(pipetteSelector) {

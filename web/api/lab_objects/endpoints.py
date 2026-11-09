@@ -27,3 +27,13 @@ def get_available_pipettes():
     serialized = schema.dumps(available_labware)
 
     return jsonify({'data': serialized})
+
+@lab_object_blueprint.route('/available_palettes', methods=('GET', ))
+@jwt_required()
+@access_level_required(SuperUserRole.printer)
+def get_available_palettes():
+    available_palettes = LabObject.stored_object_types(obj_class='palette')
+    schema = LabObjectSchema(many=True)
+    serialized = schema.dumps(available_palettes)
+
+    return jsonify({'data': serialized})

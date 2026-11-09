@@ -84,6 +84,11 @@ app.presentation = function(view, model) {
 		model.labware.select(labware);
 	});
 
+	view.paletteSelector.register.onChange(function() {
+		let palette = view.paletteSelector.getValue();
+		model.palette.select(palette);
+	});
+
 	view.pipetteSelector.register.onChange(function() {
 		let pipette = view.pipetteSelector.getValue();
 		model.pipette.select(pipette);
@@ -146,6 +151,12 @@ app.presentation = function(view, model) {
 		}
 	}
 
+	function populatePaletteOptions(palettes) {
+		for (let i=0; i!=palettes.length; ++i) {
+			view.paletteSelector.addOption(palettes[i]);
+		}
+	}
+
 	function populatePipetteOptions(pipettes) {
 		for (let i=0; i!=pipettes.length; ++i) {
 			view.pipetteSelector.addOption(pipettes[i]);
@@ -182,6 +193,7 @@ app.presentation = function(view, model) {
 			model.user.set_name(action.payload.user);
 			model.jobs.get();
 			model.labware.get_available();
+			model.palette.get_available();
 			model.pipette.get_available();
 			model.location.get_available();
 			view.submit.enable();
@@ -204,6 +216,9 @@ app.presentation = function(view, model) {
 		}
 		, 'LABWARE_DATA': function(action) {
 			populateLabOptions(action.payload.labware_data)
+		}
+		, 'PALETTE_DATA': function(action) {
+			populatePaletteOptions(action.payload.palette_data)
 		}
 		, 'PIPETTE_DATA': function(action) {
 			populatePipetteOptions(action.payload.pipette_data)

@@ -60,6 +60,22 @@ def test_lab_object_property_update():
     assert obj.properties['x_radius_mm'].value == 80
 
 @pytest.mark.usefixtures('setup_app')
+def test_stored_object_types_filtered_by_obj_class():
+    """Tests that lab objects can be listed by class, e.g. to populate the
+       palette dropdown on the print screen
+    """
+    property_collection = LabObjectPropertyCollection.from_dicts(VALID_PROPERTIES)
+    LabObject._create_in_db(VALID_PLATE_NAME, VALID_PLATE_CLASS, property_collection)
+    LabObject._create_in_db('test_palette', 'palette', LabObjectPropertyCollection.from_dicts([]))
+
+    palettes = LabObject.stored_object_types(obj_class='palette')
+    palette_names = [palette.name for palette in palettes]
+
+    assert 'test_palette' in palette_names
+    assert VALID_PLATE_NAME not in palette_names
+    assert all(palette.obj_class == 'palette' for palette in palettes)
+
+@pytest.mark.usefixtures('setup_app')
 def test_lab_object_model_update():
     properties = VALID_PROPERTIES
     property_collection = LabObjectPropertyCollection.from_dicts(properties)

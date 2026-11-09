@@ -11,6 +11,7 @@ app.init = function() {
 	model.location.get_available();
 	model.jobs.get();
 	model.labware.get_available();
+	model.palette.get_available();
 	model.pipette.get_available();
 	model.user.load_name();
 };
