@@ -17,6 +17,9 @@ app.presentation = function(view, model) {
 	const confirmMessage = 'This will fill all cells with the selected '
 						 +'color and erase ALL art. Are you sure?';
 
+	const shapeConfirmMessage = 'This will change the canvas size and erase '
+						 +'ALL art. Are you sure?';
+
 	const codeToMessage = {
 		'canvas_empty': 'Try drawing something for us to grow!'
 		, 'email': 'Try entering a valid email address!'
@@ -130,7 +133,10 @@ app.presentation = function(view, model) {
 	}
 
 	view.canvasShape.register.onClick(function(shape) {
-		selectCanvasShape(shape);
+		if (shape != selectedCanvasShape
+				&& (isBlankCanvas() || confirm(shapeConfirmMessage))) {
+			selectCanvasShape(shape);
+		}
 	});
 
 	function isSpace(c) {
