@@ -4,6 +4,7 @@ import os
 import math
 from difflib import ndiff
 from flask import current_app
+from web.database.models import JobModel
 from web.robot.art_processor import make_procedure
 from web.robot.procedure_line_injector import ProcedureLineInjector
 
@@ -253,6 +254,34 @@ def test_8_to_1_multiple_art_pieces(random_test_art_ids, num_artpieces, canvas_o
 
     assert procedure_path is None
     assert status[-1] == "ERROR: 8 to 1 pipette cannot accommodate more than 1 artpiece."
+
+
+@pytest.mark.usefixtures('test_app', 'clear_database')
+@pytest.mark.parametrize('palette', ['96-wellplate', 'omniwell plate'])
+def test_generate_procedure_with_selected_palette(random_test_art_ids, palette, canvas_object_in_db, test_database):
+    """Tests that the palette selected on the print screen is the palette
+       written into the generated procedure and recorded on the job
+    """
+    artpiece_ids, art_params = random_test_art_ids
+    status, procedure_path = make_procedure(artpiece_ids[:1],
+                                            requestor = None,
+                                            SQLALCHEMY_DATABASE_URI = test_database.engine.url,
+                                            option_args={'notebook':False
+                                                        ,'palette':palette
+                                                        ,'pipette':'p300_single'
+                                                        ,'canvas': canvas_object_in_db.name
+                                                        }
+    )
+
+    assert procedure_path is not None
+    with open(os.path.join(*procedure_path)) as output_file:
+                output_string = output_file.read()
+    assert f"palette = protocol.load_labware('{palette}', 11)" in output_string
+
+    job = (test_database.session.query(JobModel)
+                                .filter(JobModel.file_name == procedure_path[1])
+                                .one())
+    assert job.options['palette'] == palette
 
 
 

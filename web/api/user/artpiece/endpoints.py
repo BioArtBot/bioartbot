@@ -16,7 +16,7 @@ from .serializers import ArtpieceSchema, PrintableSchema, StatusSchema, ColorSch
 from ...biofoundry.core import (extract_update_info, update_objects_in_db) #should probably move this generic function to a parent module
 from web.extensions import db
 from web.database.models import SuperUserRole
-from web.robot.art_processor import make_procedure
+from web.robot.art_processor import make_procedure, DEFAULT_PALETTE
 
 import base64
 
@@ -151,9 +151,12 @@ def receive_print_request():
     artpiece_ids = request.get_json()['ids']
     labware = request.get_json()['labware']
     pipette = request.get_json()['pipette']
+    #Palettes are listed on the print screen from the lab_objects table. Fall
+    #back to the default for clients that don't send a selection.
+    palette = request.get_json().get('palette', DEFAULT_PALETTE)
 
     option_args = {'notebook':False
-                    ,'palette': 'cryo_35_tuberack_2000ul'
+                    ,'palette': palette
                     ,'pipette': pipette
                     ,'canvas': labware['canvas']
                     }

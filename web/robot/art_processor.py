@@ -11,11 +11,17 @@ from web.api.lab_objects.lab_objects import LabObject, LabObjectPropertyCollecti
 from web.database.models import (ArtpieceModel, JobModel, SuperUserModel, SuperUserRole, SubmissionStatus, BacterialColorModel, LabObjectsModel)
 from web.robot.procedure_line_injector import ProcedureLineInjector, ProcedureLineInjector8To1Pipette
 
+#Default palette used when no palette is supplied, e.g. when the CLI is used
+#instead of the web interface. Exposed here for importability by other modules.
+DEFAULT_PALETTE = 'cryo_35_tuberack_2000ul'
+DEFAULT_PIPETTE = 'p20_single_gen2'
+DEFAULT_CANVAS = 'bioartbot_petriplate_90mm_round'
+
 def read_args(args):
     if not args: args = {'notebook':False
-                        ,'palette':'cryo_35_tuberack_2000ul'
-                        ,'pipette':'p20_single_gen2'
-                        ,'canvas': 'bioartbot_petriplate_90mm_round'
+                        ,'palette':DEFAULT_PALETTE
+                        ,'pipette':DEFAULT_PIPETTE
+                        ,'canvas': DEFAULT_CANVAS
                         }
     NOTEBOOK = args.pop('notebook')
     LABWARE = args #assume unused args are all labware
